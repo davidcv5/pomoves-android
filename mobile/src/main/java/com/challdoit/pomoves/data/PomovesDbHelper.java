@@ -27,7 +27,7 @@ public class PomovesDbHelper extends SQLiteOpenHelper {
                         SessionEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         SessionEntry.COLUMN_DATE_TEXT + " TEXT NOT NULL, " +
                         SessionEntry.COLUMN_DURATION + " INTEGER, " +
-                        SessionEntry.COLUMN_DETAILS + " TEXT " +
+                        SessionEntry.COLUMN_STATS + " TEXT " +
                         ");";
 
         final String SQL_CREATE_EVENT_TABLE =
@@ -37,6 +37,7 @@ public class PomovesDbHelper extends SQLiteOpenHelper {
                         EventEntry.COLUMN_TYPE + " INTEGER NOT NULL, " +
                         EventEntry.COLUMN_START_TEXT + " TEXT NOT NULL, " +
                         EventEntry.COLUMN_END_TEXT + " TEXT NOT NULL, " +
+                        EventEntry.COLUMN_DATA + " TEXT NOT NULL, " +
                         " FOREIGN KEY (" + EventEntry.COLUMN_SESSION_ID + ") REFERENCES " +
                         SessionEntry.TABLE_NAME + " (" + SessionEntry._ID + ")" +
                         ");";
