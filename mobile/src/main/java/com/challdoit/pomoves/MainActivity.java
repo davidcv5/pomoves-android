@@ -1,9 +1,11 @@
 package com.challdoit.pomoves;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.challdoit.pomoves.ui.PomodoroFragment;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -13,8 +15,11 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SessionManager manager = SessionManager.get(this);
-        manager.startSession();
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, PomodoroFragment.newInstance())
+                    .commit();
+        }
     }
 
 
@@ -39,4 +44,5 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
