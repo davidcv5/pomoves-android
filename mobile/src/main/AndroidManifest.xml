@@ -24,6 +24,7 @@
         <provider
             android:name=".data.PomovesProvider"
             android:authorities="com.challdoit.pomoves" />
+        <service android:name=".PomovesService" />
     </application>
 
 </manifest>

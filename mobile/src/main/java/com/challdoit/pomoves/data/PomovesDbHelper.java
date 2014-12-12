@@ -37,7 +37,7 @@ public class PomovesDbHelper extends SQLiteOpenHelper {
                         EventEntry.COLUMN_TYPE + " INTEGER NOT NULL, " +
                         EventEntry.COLUMN_START_TEXT + " TEXT NOT NULL, " +
                         EventEntry.COLUMN_END_TEXT + " TEXT NOT NULL, " +
-                        EventEntry.COLUMN_DATA + " TEXT NOT NULL, " +
+                        EventEntry.COLUMN_DATA + " TEXT, " +
                         " FOREIGN KEY (" + EventEntry.COLUMN_SESSION_ID + ") REFERENCES " +
                         SessionEntry.TABLE_NAME + " (" + SessionEntry._ID + ")" +
                         ");";

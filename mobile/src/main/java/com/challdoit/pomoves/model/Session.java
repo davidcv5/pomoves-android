@@ -1,23 +1,16 @@
 package com.challdoit.pomoves.model;
 
-import android.content.ContentValues;
-
-import com.challdoit.pomoves.data.PomovesContract;
-
 import java.util.Date;
 
-/**
- * Created by admin on 12/12/14.
- */
 public class Session {
 
     private long mId;
-    private Date mStartDate;
+    private Date mDate;
     private String mStats;
 
     public Session() {
         mId = -1;
-        mStartDate = new Date();
+        mDate = new Date();
     }
 
     public long getId() {
@@ -28,12 +21,12 @@ public class Session {
         mId = id;
     }
 
-    public Date getStartDate() {
-        return mStartDate;
+    public Date getDate() {
+        return mDate;
     }
 
-    public void setStartDate(Date startDate) {
-        mStartDate = startDate;
+    public void setDate(Date date) {
+        mDate = date;
     }
 
     public String getStats() {
@@ -44,15 +37,4 @@ public class Session {
         this.mStats = stats;
     }
 
-    public int getDurationSeconds(long endMillis) {
-        return (int) ((endMillis - mStartDate.getTime()) / 1000);
-    }
-
-    public ContentValues getContentValues() {
-        ContentValues values = new ContentValues();
-        values.put(PomovesContract.SessionEntry.COLUMN_DATE_TEXT,
-                PomovesContract.getDbDateString(mStartDate));
-        values.put(PomovesContract.SessionEntry.COLUMN_STATS, mStats);
-        return values;
-    }
 }
