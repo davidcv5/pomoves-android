@@ -38,8 +38,8 @@ public class PomovesProvider extends ContentProvider {
             PomovesContract.EventEntry.TABLE_NAME +
             "." + PomovesContract.EventEntry.COLUMN_TYPE + "=?";
 
-    private Cursor getSession(Uri uri, String[] projection, String sortOrder) {
-        Cursor result;
+    private SessionCursor getSession(Uri uri, String[] projection, String sortOrder) {
+        Cursor cursor;
         String startDate =
                 PomovesContract.SessionEntry.getStartDateFromUri(uri);
 
@@ -52,7 +52,7 @@ public class PomovesProvider extends ContentProvider {
         }
 
 
-        result = mOpenHelper.getReadableDatabase().query(
+        cursor = mOpenHelper.getReadableDatabase().query(
                 PomovesContract.SessionEntry.TABLE_NAME,
                 projection,
                 selection,
@@ -60,11 +60,11 @@ public class PomovesProvider extends ContentProvider {
                 null,
                 null,
                 sortOrder);
-        return result;
+        return new SessionCursor(cursor);
     }
 
-    private Cursor getEventForSession(Uri uri, String[] projection, String sortOrder) {
-        Cursor result;
+    private EventCursor getEventForSession(Uri uri, String[] projection, String sortOrder) {
+        Cursor cursor;
         long sessionId = PomovesContract.EventEntry.getSessionFromUri(uri);
         int type = PomovesContract.EventEntry.getTypeFromUri(uri);
 
@@ -82,7 +82,7 @@ public class PomovesProvider extends ContentProvider {
 
         }
 
-        result = mOpenHelper.getReadableDatabase().query(
+        cursor = mOpenHelper.getReadableDatabase().query(
                 PomovesContract.EventEntry.TABLE_NAME,
                 projection,
                 selection,
@@ -90,7 +90,7 @@ public class PomovesProvider extends ContentProvider {
                 null,
                 null,
                 sortOrder);
-        return result;
+        return new EventCursor(cursor);
     }
 
     private static UriMatcher buildUriMatcher() {
@@ -118,7 +118,7 @@ public class PomovesProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case SESSION_ID: {
-                result = mOpenHelper.getReadableDatabase().query(
+                Cursor cursor = mOpenHelper.getReadableDatabase().query(
                         PomovesContract.SessionEntry.TABLE_NAME,
                         projection,
                         PomovesContract.SessionEntry._ID + "='"
@@ -127,6 +127,7 @@ public class PomovesProvider extends ContentProvider {
                         null,
                         null,
                         sortOrder);
+                result = new SessionCursor(cursor);
                 break;
             }
             case SESSION: {
@@ -134,7 +135,7 @@ public class PomovesProvider extends ContentProvider {
                 break;
             }
             case EVENT: {
-                result = mOpenHelper.getReadableDatabase().query(
+                Cursor cursor = mOpenHelper.getReadableDatabase().query(
                         PomovesContract.EventEntry.TABLE_NAME,
                         projection,
                         selection,
@@ -142,6 +143,7 @@ public class PomovesProvider extends ContentProvider {
                         null,
                         null,
                         sortOrder);
+                result = new EventCursor(cursor);
                 break;
             }
             case EVENT_FOR_SESSION: {
