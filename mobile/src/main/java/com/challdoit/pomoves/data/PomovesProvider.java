@@ -5,9 +5,15 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.CursorWrapper;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+
+import com.challdoit.pomoves.model.Event;
+import com.challdoit.pomoves.model.Session;
+
+import java.util.Date;
 
 public class PomovesProvider extends ContentProvider {
 
@@ -251,4 +257,42 @@ public class PomovesProvider extends ContentProvider {
 
         return rowsUpdated;
     }
+
+    public class SessionCursor extends CursorWrapper {
+        public SessionCursor(Cursor cursor) {
+            super(cursor);
+        }
+
+        public Session getSession() {
+            if (isBeforeFirst() || isAfterLast())
+                return null;
+            Session session = new Session();
+            session.setId(getLong(getColumnIndex(PomovesContract.SessionEntry._ID)));
+            session.setStartDate(new Date(getLong(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
+            session.setStats(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
+
+            return session;
+        }
+    }
+
+    public class EventCursor extends CursorWrapper {
+        public EventCursor(Cursor cursor) {
+            super(cursor);
+        }
+
+        public Event getEvent() {
+            if (isBeforeFirst() || isAfterLast())
+                return null;
+
+            Event event = new Event();
+            event.setId(getLong(getColumnIndex(PomovesContract.EventEntry._ID)));
+            event.setSessionId(getLong(getColumnIndex(PomovesContract.EventEntry.COLUMN_SESSION_ID)));
+            event.setEventType(getInt(getColumnIndex(PomovesContract.EventEntry.COLUMN_TYPE)));
+            // TODO: event.setStartDate
+            // TODO: event.setEndDate
+
+            return event;
+        }
+    }
+
 }
