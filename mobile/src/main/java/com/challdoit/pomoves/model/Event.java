@@ -7,32 +7,59 @@ import java.util.Date;
  */
 public class Event {
 
-    private int eventType;
-    private Date startDate;
-    private Date endDate;
+    private long mId;
+    private long mSessionId;
+    private int mEventType;
+    private Date mStartDate;
+    private Date mEndDate;
 
-    public Event(int eventType) {
-        this.eventType = eventType;
-        startDate = new Date();
+    public Event() {
+    }
+
+    public Event(long sessionId, int eventType) {
+        this.mId = -1;
+        this.mSessionId = sessionId;
+        this.mEventType = eventType;
+        mStartDate = new Date();
+    }
+
+    public long getId() {
+        return mId;
+    }
+
+    public void setId(long id) {
+        mId = id;
+    }
+
+    public long getSessionId() {
+        return mSessionId;
+    }
+
+    public void setSessionId(long sessionId) {
+        this.mSessionId = sessionId;
     }
 
     public int getEventType() {
-        return eventType;
+        return mEventType;
+    }
+
+    public void setEventType(int eventType) {
+        this.mEventType = eventType;
     }
 
     public Date getStartDate() {
-        return startDate;
+        return mStartDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.mStartDate = startDate;
     }
 
     public Date getEndDate() {
-        return endDate;
+        return mEndDate;
     }
 
-    public long duration() {
-        return endDate.getTime() - startDate.getTime();
-    }
-
-    private void stop() {
-        endDate = new Date();
+    public void setEndDate(Date endDate) {
+        this.mEndDate = endDate;
     }
 }
