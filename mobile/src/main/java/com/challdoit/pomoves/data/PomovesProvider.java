@@ -13,8 +13,6 @@ import android.net.Uri;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
 
-import java.util.Date;
-
 public class PomovesProvider extends ContentProvider {
 
     private static final int SESSION = 100;
@@ -269,10 +267,13 @@ public class PomovesProvider extends ContentProvider {
 
             Event event = new Event();
             event.setId(getLong(getColumnIndex(PomovesContract.EventEntry._ID)));
-            event.setSessionId(getLong(getColumnIndex(PomovesContract.EventEntry.COLUMN_SESSION_ID)));
+            event.setSessionId(
+                    getLong(getColumnIndex(PomovesContract.EventEntry.COLUMN_SESSION_ID)));
             event.setEventType(getInt(getColumnIndex(PomovesContract.EventEntry.COLUMN_TYPE)));
-            // TODO: event.setStartDate
-            // TODO: event.setEndDate
+            event.setStartDate(PomovesContract.getDateFromDb(
+                    getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_START_TEXT))));
+            event.setEndDate(PomovesContract.getDateFromDb(
+                    getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_END_TEXT))));
 
             return event;
         }
@@ -288,7 +289,8 @@ public class PomovesProvider extends ContentProvider {
                 return null;
             Session session = new Session();
             session.setId(getLong(getColumnIndex(PomovesContract.SessionEntry._ID)));
-            session.setStartDate(new Date(getLong(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
+            session.setStartDate(PomovesContract.getDateFromDb(
+                    getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
             session.setStats(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
 
             return session;
