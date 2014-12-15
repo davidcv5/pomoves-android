@@ -38,7 +38,7 @@ public class PomovesProvider extends ContentProvider {
             PomovesContract.EventEntry.TABLE_NAME +
             "." + PomovesContract.EventEntry.COLUMN_TYPE + "=?";
 
-    private SessionCursor getSession(Uri uri, String[] projection, String sortOrder) {
+    private Cursor getSession(Uri uri, String[] projection, String sortOrder) {
         Cursor cursor;
         String startDate =
                 PomovesContract.SessionEntry.getStartDateFromUri(uri);
@@ -60,10 +60,10 @@ public class PomovesProvider extends ContentProvider {
                 null,
                 null,
                 sortOrder);
-        return new SessionCursor(cursor);
+        return cursor;
     }
 
-    private EventCursor getEventForSession(Uri uri, String[] projection, String sortOrder) {
+    private Cursor getEventForSession(Uri uri, String[] projection, String sortOrder) {
         Cursor cursor;
         long sessionId = PomovesContract.EventEntry.getSessionFromUri(uri);
         int type = PomovesContract.EventEntry.getTypeFromUri(uri);
@@ -90,7 +90,7 @@ public class PomovesProvider extends ContentProvider {
                 null,
                 null,
                 sortOrder);
-        return new EventCursor(cursor);
+        return cursor;
     }
 
     private static UriMatcher buildUriMatcher() {
@@ -118,7 +118,7 @@ public class PomovesProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case SESSION_ID: {
-                Cursor cursor = mOpenHelper.getReadableDatabase().query(
+                result = mOpenHelper.getReadableDatabase().query(
                         PomovesContract.SessionEntry.TABLE_NAME,
                         projection,
                         PomovesContract.SessionEntry._ID + "='"
@@ -127,7 +127,6 @@ public class PomovesProvider extends ContentProvider {
                         null,
                         null,
                         sortOrder);
-                result = new SessionCursor(cursor);
                 break;
             }
             case SESSION: {
@@ -135,7 +134,7 @@ public class PomovesProvider extends ContentProvider {
                 break;
             }
             case EVENT: {
-                Cursor cursor = mOpenHelper.getReadableDatabase().query(
+                result = mOpenHelper.getReadableDatabase().query(
                         PomovesContract.EventEntry.TABLE_NAME,
                         projection,
                         selection,
@@ -143,7 +142,6 @@ public class PomovesProvider extends ContentProvider {
                         null,
                         null,
                         sortOrder);
-                result = new EventCursor(cursor);
                 break;
             }
             case EVENT_FOR_SESSION: {
@@ -260,24 +258,7 @@ public class PomovesProvider extends ContentProvider {
         return rowsUpdated;
     }
 
-    public class SessionCursor extends CursorWrapper {
-        public SessionCursor(Cursor cursor) {
-            super(cursor);
-        }
-
-        public Session getSession() {
-            if (isBeforeFirst() || isAfterLast())
-                return null;
-            Session session = new Session();
-            session.setId(getLong(getColumnIndex(PomovesContract.SessionEntry._ID)));
-            session.setStartDate(new Date(getLong(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
-            session.setStats(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
-
-            return session;
-        }
-    }
-
-    public class EventCursor extends CursorWrapper {
+    public static class EventCursor extends CursorWrapper {
         public EventCursor(Cursor cursor) {
             super(cursor);
         }
@@ -294,6 +275,23 @@ public class PomovesProvider extends ContentProvider {
             // TODO: event.setEndDate
 
             return event;
+        }
+    }
+
+    public static class SessionCursor extends CursorWrapper {
+        public SessionCursor(Cursor cursor) {
+            super(cursor);
+        }
+
+        public Session getSession() {
+            if (isBeforeFirst() || isAfterLast())
+                return null;
+            Session session = new Session();
+            session.setId(getLong(getColumnIndex(PomovesContract.SessionEntry._ID)));
+            session.setStartDate(new Date(getLong(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
+            session.setStats(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
+
+            return session;
         }
     }
 

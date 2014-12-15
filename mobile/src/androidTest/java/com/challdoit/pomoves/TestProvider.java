@@ -9,7 +9,11 @@ import android.util.Log;
 
 import com.challdoit.pomoves.data.PomovesContract.EventEntry;
 import com.challdoit.pomoves.data.PomovesContract.SessionEntry;
+import com.challdoit.pomoves.data.PomovesProvider.EventCursor;
+import com.challdoit.pomoves.data.PomovesProvider.SessionCursor;
+import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.EventType;
+import com.challdoit.pomoves.model.Session;
 
 import java.util.Date;
 import java.util.Map;
@@ -149,7 +153,7 @@ public class TestProvider extends AndroidTestCase {
 
     }
 
-    public void testDeleteRecordsAtEnd(){
+    public void testDeleteRecordsAtEnd() {
         testDeleteAllRecords();
     }
 
@@ -255,6 +259,61 @@ public class TestProvider extends AndroidTestCase {
             fail("No values returned :(");
 
         cursor.close();
+    }
+
+
+    public void testCursorWrapper() {
+        testDeleteAllRecords();
+
+        ContentValues values = getSessionValues();
+
+        Uri sessionUri = mContext.getContentResolver().insert(
+                SessionEntry.CONTENT_URI, values);
+        long sessionRowId = ContentUris.parseId(sessionUri);
+
+        assertTrue(sessionRowId != -1);
+
+        Cursor cursor = mContext.getContentResolver().query(
+                SessionEntry.buildSessionUri(sessionRowId),
+                null,
+                null,
+                null,
+                null);
+
+        assertTrue(cursor.getCount() > 0);
+
+        if (cursor.moveToFirst()) {
+
+            SessionCursor sessionCursor = new SessionCursor(cursor);
+            Session session = sessionCursor.getSession();
+
+            assertEquals(sessionRowId, session.getId());
+            //assertEquals(values.getAsString(SessionEntry.COLUMN_DATE_TEXT), session.getStartDate());
+            assertEquals(values.getAsString(SessionEntry.COLUMN_STATS), session.getStats());
+        } else
+            fail("No values returned :(");
+
+        cursor.close();
+
+        values = getEventValues(sessionRowId);
+
+        mContext.getContentResolver().insert(
+                EventEntry.CONTENT_URI, values);
+
+        cursor = mContext.getContentResolver().query(
+                EventEntry.buildEventUri(sessionRowId),
+                null,
+                null,
+                null,
+                null);
+
+        if (cursor.moveToFirst()) {
+            EventCursor eventCursor = new EventCursor(cursor);
+            Event event = eventCursor.getEvent();
+
+            assertEquals(values.getAsInteger(EventEntry.COLUMN_TYPE).intValue(), event.getEventType());
+        } else
+            fail("No values returned :(");
     }
 
 }
