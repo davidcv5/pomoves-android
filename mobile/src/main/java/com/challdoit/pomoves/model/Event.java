@@ -1,5 +1,9 @@
 package com.challdoit.pomoves.model;
 
+import android.content.ContentValues;
+
+import com.challdoit.pomoves.data.PomovesContract;
+
 import java.util.Date;
 
 /**
@@ -12,6 +16,7 @@ public class Event {
     private int mEventType;
     private Date mStartDate;
     private Date mEndDate;
+    private String mData;
 
     public Event() {
     }
@@ -62,4 +67,31 @@ public class Event {
     public void setEndDate(Date endDate) {
         this.mEndDate = endDate;
     }
+
+    public String getData() {
+        return mData;
+    }
+
+    public void setData(String data) {
+        mData = data;
+    }
+
+    public ContentValues getContentValues() {
+        ContentValues values = new ContentValues();
+        values.put(PomovesContract.EventEntry.COLUMN_SESSION_ID, mSessionId);
+        values.put(PomovesContract.EventEntry.COLUMN_TYPE, mEventType);
+        values.put(PomovesContract.EventEntry.COLUMN_START_TEXT,
+                PomovesContract.getDbDateString(mStartDate));
+        values.put(PomovesContract.EventEntry.COLUMN_END_TEXT,
+                PomovesContract.getDbDateString(mEndDate));
+        values.put(PomovesContract.EventEntry.COLUMN_DATA, mData);
+        return values;
+    }
+
+    public static final class EventType {
+        public static final int POMODORO = 1;
+        public static final int SHORT_BREAK = 2;
+        public static final int LONG_BREAK = 3;
+    }
+
 }

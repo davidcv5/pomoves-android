@@ -9,7 +9,7 @@ import android.util.Log;
 import com.challdoit.pomoves.data.PomovesContract.SessionEntry;
 import com.challdoit.pomoves.data.PomovesContract.EventEntry;
 import com.challdoit.pomoves.data.PomovesDbHelper;
-import com.challdoit.pomoves.model.EventType;
+import com.challdoit.pomoves.model.Event;
 
 import java.util.Date;
 import java.util.Map;
@@ -103,7 +103,7 @@ public class TestDb extends AndroidTestCase {
     }
 
     private ContentValues getEventValues(long sessionId) {
-        int testType = EventType.POMODORO;
+        int testType = Event.EventType.POMODORO;
         long currentTime = System.currentTimeMillis();
         String testStart = new Date(currentTime - 25 * 60 * 1000).toString();
         String testEnd = new Date(currentTime).toString();

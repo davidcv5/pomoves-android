@@ -1,5 +1,9 @@
 package com.challdoit.pomoves.model;
 
+import android.content.ContentValues;
+
+import com.challdoit.pomoves.data.PomovesContract;
+
 import java.util.Date;
 
 /**
@@ -9,7 +13,7 @@ public class Session {
 
     private long mId;
     private Date mStartDate;
-    private String stats;
+    private String mStats;
 
     public Session() {
         mId = -1;
@@ -33,15 +37,22 @@ public class Session {
     }
 
     public String getStats() {
-        return stats;
+        return mStats;
     }
 
     public void setStats(String stats) {
-        this.stats = stats;
+        this.mStats = stats;
     }
 
     public int getDurationSeconds(long endMillis) {
         return (int) ((endMillis - mStartDate.getTime()) / 1000);
     }
 
+    public ContentValues getContentValues() {
+        ContentValues values = new ContentValues();
+        values.put(PomovesContract.SessionEntry.COLUMN_DATE_TEXT,
+                PomovesContract.getDbDateString(mStartDate));
+        values.put(PomovesContract.SessionEntry.COLUMN_STATS, mStats);
+        return values;
+    }
 }
