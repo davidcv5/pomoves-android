@@ -1,14 +1,11 @@
 package com.challdoit.pomoves.model;
 
-import android.content.ContentValues;
+import android.content.Context;
 
-import com.challdoit.pomoves.data.PomovesContract;
+import com.challdoit.pomoves.R;
 
 import java.util.Date;
 
-/**
- * Created by David on 12/3/14.
- */
 public class Event {
 
     private long mId;
@@ -18,6 +15,10 @@ public class Event {
     private Date mEndDate;
     private String mData;
 
+    public static final int POMODORO = 1;
+    public static final int SHORT_BREAK = 2;
+    public static final int LONG_BREAK = 3;
+
     public Event() {
     }
 
@@ -26,6 +27,7 @@ public class Event {
         this.mSessionId = sessionId;
         this.mEventType = eventType;
         mStartDate = new Date();
+        mEndDate = mStartDate;
     }
 
     public long getId() {
@@ -76,22 +78,16 @@ public class Event {
         mData = data;
     }
 
-    public ContentValues getContentValues() {
-        ContentValues values = new ContentValues();
-        values.put(PomovesContract.EventEntry.COLUMN_SESSION_ID, mSessionId);
-        values.put(PomovesContract.EventEntry.COLUMN_TYPE, mEventType);
-        values.put(PomovesContract.EventEntry.COLUMN_START_TEXT,
-                PomovesContract.getDbDateString(mStartDate));
-        values.put(PomovesContract.EventEntry.COLUMN_END_TEXT,
-                PomovesContract.getDbDateString(mEndDate));
-        values.put(PomovesContract.EventEntry.COLUMN_DATA, mData);
-        return values;
-    }
+    public static String getName(Context context, int eventType) {
+        switch (eventType) {
+            case POMODORO:
+                return context.getString(R.string.POMODORO);
+            case SHORT_BREAK:
+                return context.getString(R.string.SHORT_BREAK);
+            case LONG_BREAK:
+                return context.getString(R.string.LONG_BREAK);
+        }
 
-    public static final class EventType {
-        public static final int POMODORO = 1;
-        public static final int SHORT_BREAK = 2;
-        public static final int LONG_BREAK = 3;
+        return context.getString(R.string.UNKNOWN);
     }
-
 }

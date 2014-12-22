@@ -103,7 +103,7 @@ public class TestDb extends AndroidTestCase {
     }
 
     private ContentValues getEventValues(long sessionId) {
-        int testType = Event.EventType.POMODORO;
+        int testType = Event.POMODORO;
         long currentTime = System.currentTimeMillis();
         String testStart = new Date(currentTime - 25 * 60 * 1000).toString();
         String testEnd = new Date(currentTime).toString();

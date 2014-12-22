@@ -8,9 +8,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Created by David on 12/3/14.
- */
 public class PomovesContract {
 
     public static final String CONTENT_AUTHORITY = "com.challdoit.pomoves";
@@ -21,7 +18,7 @@ public class PomovesContract {
     public static final String PATH_EVENT = "event";
 
     public static final String DATE_FORMAT = "yyyyMMdd";
-    public static final String DATETIME_FORMAT = "yyyyMMdd:hhmmss";
+    public static final String DATETIME_FORMAT = "yyyyMMdd:HHmmss";
 
     public static final class SessionEntry implements BaseColumns {
 
@@ -90,11 +87,11 @@ public class PomovesContract {
                     .build();
         }
 
-        public static final long getSessionFromUri(Uri uri) {
+        public static long getSessionFromUri(Uri uri) {
             return Long.parseLong(uri.getPathSegments().get(1));
         }
 
-        public static final int getTypeFromUri(Uri uri) {
+        public static int getTypeFromUri(Uri uri) {
             String type = uri.getQueryParameter(COLUMN_TYPE);
 
             if (type != null)
@@ -122,6 +119,21 @@ public class PomovesContract {
 
     public static Date getDateFromDb(String dateText) {
         SimpleDateFormat dbDateFormat = new SimpleDateFormat(DATE_FORMAT);
+        try {
+            return dbDateFormat.parse(dateText);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String getDbDateTimeString(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATETIME_FORMAT);
+        return sdf.format(date);
+    }
+
+    public static Date getDateTimeFromDb(String dateText) {
+        SimpleDateFormat dbDateFormat = new SimpleDateFormat(DATETIME_FORMAT);
         try {
             return dbDateFormat.parse(dateText);
         } catch (ParseException e) {

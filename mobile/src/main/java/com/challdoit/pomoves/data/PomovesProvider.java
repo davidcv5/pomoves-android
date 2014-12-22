@@ -270,9 +270,9 @@ public class PomovesProvider extends ContentProvider {
             event.setSessionId(
                     getLong(getColumnIndex(PomovesContract.EventEntry.COLUMN_SESSION_ID)));
             event.setEventType(getInt(getColumnIndex(PomovesContract.EventEntry.COLUMN_TYPE)));
-            event.setStartDate(PomovesContract.getDateFromDb(
+            event.setStartDate(PomovesContract.getDateTimeFromDb(
                     getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_START_TEXT))));
-            event.setEndDate(PomovesContract.getDateFromDb(
+            event.setEndDate(PomovesContract.getDateTimeFromDb(
                     getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_END_TEXT))));
 
             return event;
@@ -289,7 +289,7 @@ public class PomovesProvider extends ContentProvider {
                 return null;
             Session session = new Session();
             session.setId(getLong(getColumnIndex(PomovesContract.SessionEntry._ID)));
-            session.setStartDate(PomovesContract.getDateFromDb(
+            session.setDate(PomovesContract.getDateFromDb(
                     getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
             session.setStats(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
 

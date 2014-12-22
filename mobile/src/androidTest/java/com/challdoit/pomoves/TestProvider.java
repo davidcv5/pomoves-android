@@ -136,7 +136,7 @@ public class TestProvider extends AndroidTestCase {
         eventCursor.close();
 
         Cursor eventTypePomodoroCursor = mContext.getContentResolver().query(
-                EventEntry.buildEventWithType(sessionRowId, Event.EventType.POMODORO),
+                EventEntry.buildEventWithType(sessionRowId, Event.POMODORO),
                 null,
                 null,
                 null,
@@ -150,7 +150,7 @@ public class TestProvider extends AndroidTestCase {
         eventTypePomodoroCursor.close();
 
         Cursor eventTypeShortBreakCursor = mContext.getContentResolver().query(
-                EventEntry.buildEventWithType(sessionRowId, Event.EventType.SHORT_BREAK),
+                EventEntry.buildEventWithType(sessionRowId, Event.SHORT_BREAK),
                 null,
                 null,
                 null,
@@ -200,7 +200,7 @@ public class TestProvider extends AndroidTestCase {
         assertEquals(EventEntry.CONTENT_TYPE, type);
 
         type = mContext.getContentResolver().getType(
-                EventEntry.buildEventWithType(testSessionId, Event.EventType.POMODORO));
+                EventEntry.buildEventWithType(testSessionId, Event.POMODORO));
         assertEquals(EventEntry.CONTENT_TYPE, type);
 
     }
@@ -218,7 +218,7 @@ public class TestProvider extends AndroidTestCase {
     }
 
     private ContentValues getEventValues(long sessionId) {
-        int testType = Event.EventType.POMODORO;
+        int testType = Event.POMODORO;
 
         ContentValues values = new ContentValues();
         values.put(EventEntry.COLUMN_SESSION_ID, sessionId);
@@ -301,7 +301,7 @@ public class TestProvider extends AndroidTestCase {
             assertEquals(values.getAsString(SessionEntry.COLUMN_STATS), session.getStats());
             assertEquals(PomovesContract.getDateFromDb(
                             values.getAsString(SessionEntry.COLUMN_DATE_TEXT)),
-                    session.getStartDate());
+                    session.getDate());
         } else
             fail("No values returned :(");
 
@@ -324,15 +324,17 @@ public class TestProvider extends AndroidTestCase {
             Event event = eventCursor.getEvent();
 
             assertEquals(values.getAsInteger(EventEntry.COLUMN_TYPE).intValue(), event.getEventType());
-            assertEquals(PomovesContract.getDateFromDb(
+            assertEquals(PomovesContract.getDateTimeFromDb(
                             values.getAsString(EventEntry.COLUMN_START_TEXT)),
                     event.getStartDate());
-            assertEquals(PomovesContract.getDateFromDb(
+            assertEquals(PomovesContract.getDateTimeFromDb(
                             values.getAsString(EventEntry.COLUMN_END_TEXT)),
                     event.getEndDate());
             assertEquals(values.getAsString(EventEntry.COLUMN_DATA), testData);
         } else
             fail("No values returned :(");
+
+        testDeleteAllRecords();
     }
 
 }
