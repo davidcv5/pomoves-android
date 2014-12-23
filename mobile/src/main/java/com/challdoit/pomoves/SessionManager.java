@@ -1,5 +1,6 @@
 package com.challdoit.pomoves;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -22,7 +23,6 @@ public class SessionManager {
     private static final String PREFS_FILE = "sessions";
     private static final String PREF_CURRENT_SESSION_ID = "SessionManager.currentSessionId";
     private static final String PREF_CURRENT_EVENT_TYPE = "SessionManager.eventType";
-    private static final String PREF_CURRENT_EVENT_START_TIME = "SessionManager.startTime";
     private static final String PREF_POMODORO_COUNT = "SessionManager.pomodoroCount";
     public static final String ACTION_SESSION = "com.challdoit.pomoves.ACTION_LOCATION";
 
@@ -30,13 +30,11 @@ public class SessionManager {
     private Context mAppContext;
     private SharedPreferences mPrefs;
     private long mCurrentSessionId;
-    private long mCurrentSessionStarted;
 
     private SessionManager(Context appContext) {
         mAppContext = appContext;
         mPrefs = mAppContext.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
         mCurrentSessionId = mPrefs.getLong(PREF_CURRENT_SESSION_ID, -1);
-        mCurrentSessionStarted = mPrefs.getLong(PREF_CURRENT_EVENT_START_TIME, -1);
     }
 
     public static SessionManager get(Context context) {
@@ -95,10 +93,11 @@ public class SessionManager {
     }
 
     public void startEvent(int eventType) {
-        Log.d(TAG, "Starting Event: " + Event.getName(mAppContext, eventType));
         int duration = getEventDuration(eventType) * SECOND;
 
-        cancelIntentIfRunning();
+        Log.d(TAG, String.format("Starting Event: %s, Duration: %s",
+                Event.getName(mAppContext, eventType),
+                duration));
 
         PendingIntent timer = getSessionPendingIntent(true);
         AlarmManager alarmManager =
@@ -114,6 +113,11 @@ public class SessionManager {
         }
 
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
+        Log.d(TAG, "Current Event Type: " + Event.getName(mAppContext, getCurrentEventType()));
+    }
+
+    public void stopEvent() {
+        stopEvent(false);
     }
 
     public void stopEvent(boolean stoppedManually) {
@@ -121,7 +125,9 @@ public class SessionManager {
 
         int pomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
         int currentEventType = getCurrentEventType();
-        Log.d(TAG, "Stopping Event: " + Event.getName(mAppContext, currentEventType));
+        Log.d(TAG, String.format("Stopping Event: %s, Count: %s",
+                Event.getName(mAppContext, currentEventType),
+                pomodoroCount));
         if (currentEventType == Event.POMODORO &&
                 !stoppedManually) {
             pomodoroCount++;
@@ -145,8 +151,12 @@ public class SessionManager {
 
     private void cancelIntentIfRunning() {
         PendingIntent timer = getSessionPendingIntent(false);
-        if (timer != null)
+        if (timer != null) {
             timer.cancel();
+            AlarmManager alarmManager =
+                    (AlarmManager) mAppContext.getSystemService(Context.ALARM_SERVICE);
+            alarmManager.cancel(timer);
+        }
     }
 
     public int getCurrentEventType() {
@@ -154,19 +164,21 @@ public class SessionManager {
     }
 
     private int getEventDuration(int eventType) {
+        int defaultDuration = 10;
         switch (eventType) {
             case Event.POMODORO:
-                return mPrefs.getInt(mAppContext.getString(R.string.PREF_POMODORO_DURATION), 10);
+                return mPrefs.getInt(mAppContext.getString(R.string.PREF_POMODORO_DURATION), defaultDuration);
             case Event.SHORT_BREAK:
-                return mPrefs.getInt(mAppContext.getString(R.string.PREF_SHORT_BREAK_DURATION), 10);
+                return mPrefs.getInt(mAppContext.getString(R.string.PREF_SHORT_BREAK_DURATION), defaultDuration);
             case Event.LONG_BREAK:
-                return mPrefs.getInt(mAppContext.getString(R.string.PREF_LONG_BREAK_DURATION), 10);
+                return mPrefs.getInt(mAppContext.getString(R.string.PREF_LONG_BREAK_DURATION), defaultDuration);
         }
 
         return 0;
     }
 
+    @SuppressLint("CommitPrefEdits")
     public void clearPreferences() {
-        mPrefs.edit().clear().apply();
+        mPrefs.edit().clear().commit();
     }
 }
