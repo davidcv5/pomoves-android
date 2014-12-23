@@ -42,31 +42,31 @@ public class TestSessionManager extends AndroidTestCase {
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.SHORT_BREAK, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.SHORT_BREAK, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.SHORT_BREAK, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.LONG_BREAK, manager.getCurrentEventType());
 
@@ -86,7 +86,7 @@ public class TestSessionManager extends AndroidTestCase {
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent(false);
+        manager.stopEvent();
 
         assertEquals(Event.SHORT_BREAK, manager.getCurrentEventType());
 
