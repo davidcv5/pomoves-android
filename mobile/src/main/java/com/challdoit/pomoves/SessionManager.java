@@ -11,8 +11,11 @@ import android.text.format.DateUtils;
 import android.util.Log;
 
 import com.challdoit.pomoves.model.Event;
+import com.challdoit.pomoves.model.EventHelper;
 import com.challdoit.pomoves.model.Session;
 import com.challdoit.pomoves.model.SessionHelper;
+
+import java.util.Date;
 
 public class SessionManager {
 
@@ -30,11 +33,14 @@ public class SessionManager {
     private Context mAppContext;
     private SharedPreferences mPrefs;
     private long mCurrentSessionId;
+    private int mPomodoroCount;
+    private Session mSession;
 
     private SessionManager(Context appContext) {
         mAppContext = appContext;
         mPrefs = mAppContext.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
         mCurrentSessionId = mPrefs.getLong(PREF_CURRENT_SESSION_ID, -1);
+        mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
     }
 
     public static SessionManager get(Context context) {
@@ -62,13 +68,17 @@ public class SessionManager {
     }
 
     public Session startSession() {
-        Session session = null;
-        if (getCurrentSessionId() > 0)
-            session = SessionHelper.load(mAppContext, getCurrentSessionId());
-        if (session == null || !DateUtils.isToday(session.getDate().getTime()))
-            session = createNewSession();
-        startTrackingSession(session);
-        return session;
+        mSession = getCurrentSession();
+        startTrackingSession(mSession);
+        return mSession;
+    }
+
+    private Session getCurrentSession() {
+        if (mSession == null && getCurrentSessionId() > 0)
+            mSession = SessionHelper.load(mAppContext, getCurrentSessionId());
+        if (mSession == null || !DateUtils.isToday(mSession.getDate().getTime()))
+            mSession = createNewSession();
+        return mSession;
     }
 
     private void startTrackingSession(Session session) {
@@ -79,12 +89,12 @@ public class SessionManager {
     }
 
     private Session createNewSession() {
-        Session session = new Session();
-        SessionHelper.insert(mAppContext, session);
-        return session;
+        mSession = new Session();
+        SessionHelper.insert(mAppContext, mSession);
+        return mSession;
     }
 
-    public void endSession() {
+    public void stopSession() {
         // TODO: end and save session
     }
 
@@ -99,20 +109,27 @@ public class SessionManager {
                 Event.getName(mAppContext, eventType),
                 duration));
 
+        long now = System.currentTimeMillis();
+        long end = now + duration;
+
         PendingIntent timer = getSessionPendingIntent(true);
         AlarmManager alarmManager =
                 (AlarmManager) mAppContext.getSystemService(Context.ALARM_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis() + duration,
+                    end,
                     timer);
         } else {
             alarmManager.set(AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis() + duration,
+                    end,
                     timer);
         }
 
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
+        Event event = new Event(mCurrentSessionId, eventType);
+        event.setStartDate(new Date(now));
+        event.setEndDate(new Date(end));
+        EventHelper.insert(mAppContext, event);
         Log.d(TAG, "Current Event Type: " + Event.getName(mAppContext, getCurrentEventType()));
     }
 
@@ -123,21 +140,20 @@ public class SessionManager {
     public void stopEvent(boolean stoppedManually) {
         cancelIntentIfRunning();
 
-        int pomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
         int currentEventType = getCurrentEventType();
         Log.d(TAG, String.format("Stopping Event: %s, Count: %s",
                 Event.getName(mAppContext, currentEventType),
-                pomodoroCount));
+                mPomodoroCount));
         if (currentEventType == Event.POMODORO &&
                 !stoppedManually) {
-            pomodoroCount++;
-            if (pomodoroCount < 4) {
+            mPomodoroCount++;
+            if (mPomodoroCount < 4) {
                 startEvent(Event.SHORT_BREAK);
-                mPrefs.edit().putInt(PREF_POMODORO_COUNT, pomodoroCount).apply();
             } else {
                 startEvent(Event.LONG_BREAK);
-                mPrefs.edit().putInt(PREF_POMODORO_COUNT, 0).apply();
+                mPomodoroCount = 0;
             }
+            mPrefs.edit().putInt(PREF_POMODORO_COUNT, mPomodoroCount).apply();
         } else if (currentEventType != Event.POMODORO) {
             if (stoppedManually) {
                 mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE,
@@ -146,7 +162,9 @@ public class SessionManager {
                 startEvent(Event.POMODORO);
             }
         }
-
+        Session session = getCurrentSession();
+        session.setStats(Integer.toString(getCurrentEventType()));
+        SessionHelper.update(mAppContext, session);
     }
 
     private void cancelIntentIfRunning() {
@@ -180,5 +198,9 @@ public class SessionManager {
     @SuppressLint("CommitPrefEdits")
     public void clearPreferences() {
         mPrefs.edit().clear().commit();
+    }
+
+    public int getPomodoroCount() {
+        return mPomodoroCount;
     }
 }

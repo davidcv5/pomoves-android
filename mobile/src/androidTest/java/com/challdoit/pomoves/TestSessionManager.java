@@ -20,7 +20,9 @@ public class TestSessionManager extends AndroidTestCase {
         manager.clearPreferences();
     }
 
-    public void testStartSessionFromZero() {
+    public void testSessionLifecycle() {
+
+        manager.startSession();
 
         Session session = manager.startSession();
 
@@ -29,14 +31,6 @@ public class TestSessionManager extends AndroidTestCase {
         assertTrue(currentSessionId > 0);
 
         assertTrue(manager.isTrackingSession(session));
-
-        testClearPreferences();
-
-    }
-
-    public void testSessionLifecycle() {
-
-        manager.startSession();
 
         assertTrue(manager.isTrackingSession());
 
