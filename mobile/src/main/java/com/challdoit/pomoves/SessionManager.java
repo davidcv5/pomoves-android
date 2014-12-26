@@ -25,6 +25,7 @@ public class SessionManager {
     private static final int MINUTE = 60 * SECOND;
     private static final String PREFS_FILE = "sessions";
     private static final String PREF_CURRENT_SESSION_ID = "SessionManager.currentSessionId";
+    private static final String PREF_CURRENT_EVENT_ID = "SessionManager.currentEventId";
     private static final String PREF_CURRENT_EVENT_TYPE = "SessionManager.eventType";
     private static final String PREF_POMODORO_COUNT = "SessionManager.pomodoroCount";
     public static final String ACTION_SESSION = "com.challdoit.pomoves.ACTION_LOCATION";
@@ -33,6 +34,7 @@ public class SessionManager {
     private Context mAppContext;
     private SharedPreferences mPrefs;
     private long mCurrentSessionId;
+    private long mCurrentEventId;
     private int mPomodoroCount;
     private Session mSession;
 
@@ -40,6 +42,7 @@ public class SessionManager {
         mAppContext = appContext;
         mPrefs = mAppContext.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
         mCurrentSessionId = mPrefs.getLong(PREF_CURRENT_SESSION_ID, -1);
+        mCurrentEventId = mPrefs.getLong(PREF_CURRENT_EVENT_ID, -1);
         mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
     }
 
@@ -65,6 +68,10 @@ public class SessionManager {
 
     public long getCurrentSessionId() {
         return mCurrentSessionId;
+    }
+
+    public long getCurrentEventId() {
+        return mCurrentEventId;
     }
 
     public Session startSession() {
@@ -130,6 +137,7 @@ public class SessionManager {
         event.setStartDate(new Date(now));
         event.setEndDate(new Date(end));
         EventHelper.insert(mAppContext, event);
+        mCurrentEventId = event.getId();
         Log.d(TAG, "Current Event Type: " + Event.getName(mAppContext, getCurrentEventType()));
     }
 
@@ -144,6 +152,9 @@ public class SessionManager {
         Log.d(TAG, String.format("Stopping Event: %s, Count: %s",
                 Event.getName(mAppContext, currentEventType),
                 mPomodoroCount));
+        if(stoppedManually){
+            EventHelper.delete(mAppContext, mCurrentEventId);
+        }
         if (currentEventType == Event.POMODORO &&
                 !stoppedManually) {
             mPomodoroCount++;

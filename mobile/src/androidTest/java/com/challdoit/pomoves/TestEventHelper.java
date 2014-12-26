@@ -56,5 +56,11 @@ public class TestEventHelper extends AndroidTestCase {
 
         assertTrue(event.getStartDate().before(updatedEvent.getStartDate()));
 
+        EventHelper.delete(getContext(), event.getId());
+
+        Event deleted = EventHelper.load(getContext(), event.getId());
+
+        assertNull(deleted);
+
     }
 }

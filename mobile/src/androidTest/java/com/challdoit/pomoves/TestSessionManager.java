@@ -1,7 +1,9 @@
 package com.challdoit.pomoves;
 
+import android.database.Cursor;
 import android.test.AndroidTestCase;
 
+import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
 
@@ -16,15 +18,38 @@ public class TestSessionManager extends AndroidTestCase {
         manager = SessionManager.get(mContext);
     }
 
+    public void testDeleteAll() {
+
+        mContext.getContentResolver().delete(
+                PomovesContract.EventEntry.CONTENT_URI,
+                null,
+                null);
+
+        mContext.getContentResolver().delete(
+                PomovesContract.SessionEntry.CONTENT_URI,
+                null,
+                null);
+
+        Cursor cursor = mContext.getContentResolver().query(
+                PomovesContract.SessionEntry.CONTENT_URI, null, null, null, null);
+        assertTrue(cursor.getCount() == 0);
+
+        cursor.close();
+
+        Cursor eventCursor = mContext.getContentResolver().query(
+                PomovesContract.EventEntry.CONTENT_URI, null, null, null, null);
+        assertTrue(eventCursor.getCount() == 0);
+
+        eventCursor.close();
+    }
+
     private void testClearPreferences() {
         manager.clearPreferences();
     }
 
     public void testSessionLifecycle() {
 
-        manager.startSession();
-
-        Session session = manager.startSession();
+        Session session = manager.startSession(); // Event 1
 
         long currentSessionId = manager.getCurrentSessionId();
 
@@ -36,39 +61,64 @@ public class TestSessionManager extends AndroidTestCase {
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent();
+        manager.stopEvent(); // Event 2
 
         assertEquals(Event.SHORT_BREAK, manager.getCurrentEventType());
 
-        manager.stopEvent();
+        manager.stopEvent(); // Event 3
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent();
+        manager.stopEvent(); // Event 4
 
         assertEquals(Event.SHORT_BREAK, manager.getCurrentEventType());
 
-        manager.stopEvent();
+        manager.stopEvent(); // Event 5
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent();
+        manager.stopEvent(true); // Event 4
+
+        Cursor eventCursor = mContext.getContentResolver().query(
+                PomovesContract.EventEntry.CONTENT_URI,
+                new String[]{PomovesContract.EventEntry._ID},
+                null,
+                null,
+                null);
+
+        assertEquals(4, eventCursor.getCount());
+
+        manager.startSession(); // Event 5
+
+        assertEquals(Event.POMODORO, manager.getCurrentEventType());
+
+        manager.stopEvent(); // Event 6
 
         assertEquals(Event.SHORT_BREAK, manager.getCurrentEventType());
 
-        manager.stopEvent();
+        manager.stopEvent(); // Event 7
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
-        manager.stopEvent();
+        manager.stopEvent(); // Event 8
 
         assertEquals(Event.LONG_BREAK, manager.getCurrentEventType());
 
-        manager.stopEvent(true);
+        manager.stopEvent(true); // Event 9
 
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
         assertFalse(manager.isTrackingSession());
+
+        Cursor cursor = mContext.getContentResolver().query(
+                PomovesContract.SessionEntry.CONTENT_URI,
+                new String[]{PomovesContract.SessionEntry._ID},
+                null,
+                null,
+                null);
+
+        assertEquals(1, cursor.getCount());
+
 
         testClearPreferences();
 
