@@ -59,4 +59,12 @@ public class EventHelper {
         return values;
     }
 
+    public static void delete(Context context, long currentEventId) {
+        if (currentEventId > 0) {
+            context.getContentResolver().delete(
+                    PomovesContract.EventEntry.CONTENT_URI,
+                    PomovesContract.EventEntry._ID + "=?",
+                    new String[]{Long.toString(currentEventId)});
+        }
+    }
 }
