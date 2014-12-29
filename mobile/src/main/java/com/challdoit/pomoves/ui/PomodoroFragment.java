@@ -1,6 +1,7 @@
 package com.challdoit.pomoves.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -67,11 +68,20 @@ public class PomodoroFragment extends Fragment
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mSessionManager.isTrackingSession()){
+                if (mSessionManager.isTrackingSession()) {
                     mSessionManager.stopEvent(true);
-                }else{
+                } else {
                     mSessionManager.startSession();
                 }
+            }
+        });
+
+        Button sessionButton = (Button) view.findViewById(R.id.sessionsButton);
+        sessionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), SessionActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -124,7 +134,7 @@ public class PomodoroFragment extends Fragment
                     getActivity(),
                     mSessionManager.getCurrentEventType()) + " " + session.getId());
             mCountTextView.setText(Integer.toString(mSessionManager.getPomodoroCount()));
-            if(mSessionManager.isTrackingSession())
+            if (mSessionManager.isTrackingSession())
                 mStartButton.setText("Stop");
             else
                 mStartButton.setText("Start");

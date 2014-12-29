@@ -22,13 +22,17 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.SessionActivity"
+            android:label="@string/app_name"/>
+
         <provider
             android:name=".data.PomovesProvider"
             android:authorities="com.challdoit.pomoves"/>
         <receiver
             android:name=".PomovesReceiver">
             <intent-filter>
-                <action android:name="com.challdoit.pomoves.ACTION_LOCATION" />
+                <action android:name="com.challdoit.pomoves.ACTION_LOCATION"/>
             </intent-filter>
         </receiver>
     </application>

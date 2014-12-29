@@ -132,8 +132,9 @@ public class SessionManager {
                     timer);
         }
 
+        Session session = getCurrentSession();
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
-        Event event = new Event(mCurrentSessionId, eventType);
+        Event event = new Event(session.getId(), eventType);
         event.setStartDate(new Date(now));
         event.setEndDate(new Date(end));
         EventHelper.insert(mAppContext, event);
@@ -152,7 +153,7 @@ public class SessionManager {
         Log.d(TAG, String.format("Stopping Event: %s, Count: %s",
                 Event.getName(mAppContext, currentEventType),
                 mPomodoroCount));
-        if(stoppedManually){
+        if (stoppedManually) {
             EventHelper.delete(mAppContext, mCurrentEventId);
         }
         if (currentEventType == Event.POMODORO &&
