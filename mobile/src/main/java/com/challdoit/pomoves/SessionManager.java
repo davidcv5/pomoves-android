@@ -6,15 +6,18 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Build;
 import android.text.format.DateUtils;
 import android.util.Log;
 
+import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.EventHelper;
 import com.challdoit.pomoves.model.Session;
 import com.challdoit.pomoves.model.SessionHelper;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class SessionManager {
@@ -44,6 +47,39 @@ public class SessionManager {
         mCurrentSessionId = mPrefs.getLong(PREF_CURRENT_SESSION_ID, -1);
         mCurrentEventId = mPrefs.getLong(PREF_CURRENT_EVENT_ID, -1);
         mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
+
+        Cursor c = appContext.getContentResolver().query(
+                PomovesContract.SessionEntry.CONTENT_URI,
+                new String[]{PomovesContract.SessionEntry._ID},
+                null, null, null);
+        int total = c.getCount();
+        if (total == 0) {
+            Calendar cal = Calendar.getInstance();
+
+            cal.set(Calendar.YEAR, 2014);
+            cal.set(Calendar.MONTH, 12);
+            for (int i = 1; i <= 31; i++) {
+                cal.set(Calendar.DAY_OF_MONTH, i);
+                Session s = new Session();
+                s.setDate(cal.getTime());
+                s.setStats("Session with ID: " + i);
+                SessionHelper.insert(mAppContext, s);
+                mCurrentEventId = s.getId();
+            }
+
+            cal.set(Calendar.YEAR, 2015);
+            cal.set(Calendar.MONTH, 1);
+            for (int i = 1; i <= 4; i++) {
+                cal.set(Calendar.DAY_OF_MONTH, i);
+                Session s = new Session();
+                s.setDate(cal.getTime());
+                s.setStats("Session with ID: " + i);
+                SessionHelper.insert(mAppContext, s);
+                mCurrentEventId = s.getId();
+            }
+        }
+
+        mSession = getCurrentSession();
     }
 
     public static SessionManager get(Context context) {
@@ -81,10 +117,11 @@ public class SessionManager {
     }
 
     private Session getCurrentSession() {
-        if (mSession == null && getCurrentSessionId() > 0)
-            mSession = SessionHelper.load(mAppContext, getCurrentSessionId());
-        if (mSession == null || !DateUtils.isToday(mSession.getDate().getTime()))
+        if (getCurrentSessionId() < 0 ||
+                (mSession != null && !DateUtils.isToday(mSession.getDate().getTime())))
             mSession = createNewSession();
+        else if (mSession == null)
+            mSession = SessionHelper.load(mAppContext, getCurrentSessionId());
         return mSession;
     }
 
@@ -97,7 +134,9 @@ public class SessionManager {
 
     private Session createNewSession() {
         mSession = new Session();
+        mSession.setStats("some stats");
         SessionHelper.insert(mAppContext, mSession);
+        mCurrentSessionId = mSession.getId();
         return mSession;
     }
 

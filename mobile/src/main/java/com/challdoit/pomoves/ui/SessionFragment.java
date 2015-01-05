@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.challdoit.pomoves.R;
+import com.challdoit.pomoves.SessionManager;
 import com.challdoit.pomoves.data.PomovesContract;
 
 public class SessionFragment extends Fragment
@@ -40,6 +41,12 @@ public class SessionFragment extends Fragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         getLoaderManager().initLoader(SESSION_LOADER, null, this);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SessionManager.get(getActivity());
+            }
+        }).start();
         super.onActivityCreated(savedInstanceState);
     }
 

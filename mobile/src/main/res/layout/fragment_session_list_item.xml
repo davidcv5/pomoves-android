@@ -4,5 +4,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:height="?android:attr/listPreferredItemHeightLarge">
+    android:height="?android:attr/listPreferredItemHeight"
+    android:paddingLeft="@dimen/keyline_margin"
+    android:paddingRight="@dimen/keyline_margin"
+    android:text="something"
+    android:gravity="center_vertical">
 </TextView>

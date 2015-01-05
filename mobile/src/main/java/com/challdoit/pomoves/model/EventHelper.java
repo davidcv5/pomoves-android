@@ -9,9 +9,6 @@ import android.net.Uri;
 import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.data.PomovesProvider;
 
-/**
- * Created by admin on 12/19/14.
- */
 public class EventHelper {
 
     public static Event load(Context context, long id) {
