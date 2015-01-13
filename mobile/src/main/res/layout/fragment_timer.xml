@@ -7,6 +7,7 @@
              android:orientation="vertical">
 
     <TextView
+        android:id="@+id/timerTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -17,7 +18,7 @@
         android:textSize="96sp"/>
 
     <com.challdoit.pomoves.ui.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/timerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"

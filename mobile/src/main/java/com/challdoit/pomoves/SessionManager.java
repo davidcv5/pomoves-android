@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.format.DateUtils;
 import android.util.Log;
 
@@ -30,6 +31,7 @@ public class SessionManager {
     private static final String PREF_CURRENT_SESSION_ID = "SessionManager.currentSessionId";
     private static final String PREF_CURRENT_EVENT_ID = "SessionManager.currentEventId";
     private static final String PREF_CURRENT_EVENT_TYPE = "SessionManager.eventType";
+    private static final String PREF_CURRENT_END_TIME = "SessionManager.currentEndTime";
     private static final String PREF_POMODORO_COUNT = "SessionManager.pomodoroCount";
     public static final String ACTION_SESSION = "com.challdoit.pomoves.ACTION_LOCATION";
 
@@ -40,6 +42,7 @@ public class SessionManager {
     private long mCurrentEventId;
     private int mPomodoroCount;
     private Session mSession;
+    private long mCurrentEndTime;
 
     private SessionManager(Context appContext) {
         mAppContext = appContext;
@@ -47,6 +50,7 @@ public class SessionManager {
         mCurrentSessionId = mPrefs.getLong(PREF_CURRENT_SESSION_ID, -1);
         mCurrentEventId = mPrefs.getLong(PREF_CURRENT_EVENT_ID, -1);
         mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
+        mCurrentEndTime = mPrefs.getLong(PREF_CURRENT_END_TIME, 0);
 
         Cursor c = appContext.getContentResolver().query(
                 PomovesContract.SessionEntry.CONTENT_URI,
@@ -156,18 +160,18 @@ public class SessionManager {
                 duration));
 
         long now = System.currentTimeMillis();
-        long end = now + duration;
+        setCurrentEndTime(now + duration);
 
         PendingIntent timer = getSessionPendingIntent(true);
         AlarmManager alarmManager =
                 (AlarmManager) mAppContext.getSystemService(Context.ALARM_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP,
-                    end,
+                    mCurrentEndTime,
                     timer);
         } else {
             alarmManager.set(AlarmManager.RTC_WAKEUP,
-                    end,
+                    mCurrentEndTime,
                     timer);
         }
 
@@ -175,10 +179,12 @@ public class SessionManager {
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
         Event event = new Event(session.getId(), eventType);
         event.setStartDate(new Date(now));
-        event.setEndDate(new Date(end));
+        event.setEndDate(new Date(mCurrentEndTime));
         EventHelper.insert(mAppContext, event);
         mCurrentEventId = event.getId();
         Log.d(TAG, "Current Event Type: " + Event.getName(mAppContext, getCurrentEventType()));
+
+        notifyChange();
     }
 
     public void stopEvent() {
@@ -216,6 +222,14 @@ public class SessionManager {
         Session session = getCurrentSession();
         session.setStats(Integer.toString(getCurrentEventType()));
         SessionHelper.update(mAppContext, session);
+
+        if (stoppedManually)
+            notifyChange();
+    }
+
+    private void notifyChange() {
+        LocalBroadcastManager.getInstance(mAppContext).sendBroadcast(
+                new Intent(SessionManager.ACTION_SESSION));
     }
 
     private void cancelIntentIfRunning() {
@@ -253,5 +267,14 @@ public class SessionManager {
 
     public int getPomodoroCount() {
         return mPomodoroCount;
+    }
+
+    public long getCurrentEndTime() {
+        return mCurrentEndTime;
+    }
+
+    public void setCurrentEndTime(long currentEndTime) {
+        mCurrentEndTime = currentEndTime;
+        mPrefs.edit().putLong(PREF_CURRENT_END_TIME, currentEndTime);
     }
 }

@@ -402,7 +402,6 @@ public class FloatingActionButton extends FrameLayout implements Checkable {
      */
     @Override
     public boolean performClick() {
-        Log.d(TAG, "button clicked");
         toggle();
         return super.performClick();
     }
