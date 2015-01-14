@@ -15,10 +15,10 @@
 
         <activity
             android:name=".ui.TimerActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
@@ -29,7 +29,9 @@
         <receiver
             android:name=".PomovesReceiver">
             <intent-filter>
-                <action android:name="com.challdoit.pomoves.ACTION_LOCATION"/>
+                <action android:name="com.challdoit.pomoves.ACTION_EVENT"/>
+                <action android:name="com.challdoit.pomoves.ACTION_STOP"/>
+                <action android:name="com.challdoit.pomoves.ACTION_NEXT"/>
             </intent-filter>
         </receiver>
     </application>

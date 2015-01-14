@@ -27,17 +27,21 @@ public class TimerFragment extends Fragment {
     private PomodoroCountdown mPomodoroCountdown;
 
     private TextView mTimerText;
+    private FloatingActionButton mTimerButton;
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mPomodoroCountdown != null)
                 mPomodoroCountdown.cancel();
-            if (mSessionManager.isTrackingSession()) {
+            boolean isRunning = mSessionManager.isTrackingSession();
+            if (isRunning) {
                 mPomodoroCountdown = new PomodoroCountdown(
                         mSessionManager.getCurrentEndTime() - System.currentTimeMillis(), 1000);
                 mPomodoroCountdown.start();
             }
+            if (mTimerButton != null)
+                mTimerButton.setChecked(isRunning);
         }
     };
 
@@ -67,18 +71,18 @@ public class TimerFragment extends Fragment {
         } else
             mTimerText.setText(getFormattedTime(0));
 
-        FloatingActionButton timerButton = (FloatingActionButton) view.findViewById(R.id.timerButton);
+        mTimerButton = (FloatingActionButton) view.findViewById(R.id.timerButton);
 
-        timerButton.setChecked(mSessionManager.isTrackingSession());
+        mTimerButton.setChecked(mSessionManager.isTrackingSession());
 
-        timerButton.setOnClickListener(new View.OnClickListener() {
+        mTimerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!((FloatingActionButton) v).isChecked()) {
-                    mSessionManager.stopEvent(true);
-                } else {
-                    mSessionManager.startSession();
-                }
+                Intent intent = new Intent(
+                        ((FloatingActionButton) v).isChecked() ?
+                                SessionManager.ACTION_NEXT :
+                                SessionManager.ACTION_STOP);
+                getActivity().sendBroadcast(intent);
             }
         });
 
@@ -88,9 +92,11 @@ public class TimerFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (mTimerButton != null)
+            mTimerButton.setChecked(mSessionManager.isTrackingSession());
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
                 mBroadcastReceiver,
-                new IntentFilter(SessionManager.ACTION_SESSION));
+                new IntentFilter(SessionManager.ACTION_EVENT));
     }
 
     @Override
