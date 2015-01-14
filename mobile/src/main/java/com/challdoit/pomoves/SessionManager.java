@@ -33,7 +33,9 @@ public class SessionManager {
     private static final String PREF_CURRENT_EVENT_TYPE = "SessionManager.eventType";
     private static final String PREF_CURRENT_END_TIME = "SessionManager.currentEndTime";
     private static final String PREF_POMODORO_COUNT = "SessionManager.pomodoroCount";
-    public static final String ACTION_SESSION = "com.challdoit.pomoves.ACTION_LOCATION";
+    public static final String ACTION_EVENT = "com.challdoit.pomoves.ACTION_EVENT";
+    public static final String ACTION_STOP = "com.challdoit.pomoves.ACTION_STOP";
+    public static final String ACTION_NEXT = "com.challdoit.pomoves.ACTION_NEXT";
 
     private static SessionManager sSessionManager;
     private Context mAppContext;
@@ -93,7 +95,7 @@ public class SessionManager {
     }
 
     private PendingIntent getSessionPendingIntent(boolean shouldCreate) {
-        Intent broadcast = new Intent(ACTION_SESSION);
+        Intent broadcast = new Intent(ACTION_EVENT);
         int flags = shouldCreate ? 0 : PendingIntent.FLAG_NO_CREATE;
         return PendingIntent.getBroadcast(mAppContext, 0, broadcast, flags);
     }
@@ -229,7 +231,7 @@ public class SessionManager {
 
     private void notifyChange() {
         LocalBroadcastManager.getInstance(mAppContext).sendBroadcast(
-                new Intent(SessionManager.ACTION_SESSION));
+                new Intent(SessionManager.ACTION_EVENT));
     }
 
     private void cancelIntentIfRunning() {
@@ -275,6 +277,6 @@ public class SessionManager {
 
     public void setCurrentEndTime(long currentEndTime) {
         mCurrentEndTime = currentEndTime;
-        mPrefs.edit().putLong(PREF_CURRENT_END_TIME, currentEndTime);
+        mPrefs.edit().putLong(PREF_CURRENT_END_TIME, currentEndTime).apply();
     }
 }
