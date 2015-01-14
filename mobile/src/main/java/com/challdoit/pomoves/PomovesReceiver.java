@@ -3,6 +3,7 @@ package com.challdoit.pomoves;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class PomovesReceiver extends BroadcastReceiver {

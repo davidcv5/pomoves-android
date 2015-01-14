@@ -1,5 +1,7 @@
 package com.challdoit.pomoves.model;
 
+import com.challdoit.pomoves.data.PomovesContract;
+
 import java.util.Date;
 
 public class Session {
@@ -37,4 +39,9 @@ public class Session {
         this.mStats = stats;
     }
 
+    @Override
+    public String toString() {
+        return String.format("ID: %s, Date: %s",
+                getId(), PomovesContract.getDbDateString(getDate()));
+    }
 }

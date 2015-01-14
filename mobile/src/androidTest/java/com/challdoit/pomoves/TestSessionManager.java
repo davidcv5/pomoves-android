@@ -1,11 +1,14 @@
 package com.challdoit.pomoves;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.test.AndroidTestCase;
 
 import com.challdoit.pomoves.data.PomovesContract;
+import com.challdoit.pomoves.data.PomovesDbHelper;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
+import com.challdoit.pomoves.model.SessionHelper;
 
 public class TestSessionManager extends AndroidTestCase {
 
@@ -119,9 +122,7 @@ public class TestSessionManager extends AndroidTestCase {
 
         assertEquals(1, cursor.getCount());
 
-
         testClearPreferences();
-
     }
 
     public void testStopSessionManually() {
