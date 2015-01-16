@@ -2,6 +2,7 @@ package com.challdoit.pomoves.ui;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 
 import com.challdoit.pomoves.R;
@@ -15,8 +16,6 @@ public class TimerActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        toolbar.setTitle("My Toolbar");
-        toolbar.setSubtitle("subtitle");
 
         toolbar.setNavigationIcon(R.drawable.ic_drawer);
 
@@ -28,5 +27,11 @@ public class TimerActivity extends BaseActivity {
                 TimerFragment.newInstance()
         ).commit();
 
+        NavigationDrawerFragment drawer =
+                (NavigationDrawerFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.navigation_fragment);
+
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.setUp(drawerLayout, toolbar);
     }
 }

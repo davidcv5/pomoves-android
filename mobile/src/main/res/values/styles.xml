@@ -1,9 +1,10 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.Pomoves" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/material_blue_500</item>
-        <item name="colorPrimaryDark">@color/material_blue_700</item>
-        <item name="colorAccent">@color/material_green_A200</item>
+    <style name="Theme.Pomodoro" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/primary</item>
         <item name="android:textColorPrimary">#fff</item>
 
     </style>
