@@ -13,7 +13,7 @@ public class TimerActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_timer);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
 
@@ -27,11 +27,11 @@ public class TimerActivity extends BaseActivity {
                 TimerFragment.newInstance()
         ).commit();
 
-        NavigationDrawerFragment drawer =
-                (NavigationDrawerFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.navigation_fragment);
+//        NavigationDrawerFragment drawer =
+//                (NavigationDrawerFragment) getSupportFragmentManager()
+//                        .findFragmentById(R.id.navigation_fragment);
 
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.setUp(drawerLayout, toolbar);
+//        drawer.setUp(drawerLayout, toolbar);
     }
 }
