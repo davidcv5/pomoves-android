@@ -111,8 +111,8 @@ public class FloatingActionButton extends FrameLayout implements Checkable {
     private void init(Context context, AttributeSet attributeSet) {
         setClickable(true);
         mVisible = true;
-        mColorNormal = getColor(R.color.material_blue_500);
-        mColorPressed = getColor(R.color.material_blue_600);
+        mColorNormal = getColor(R.color.accent_pressed);
+        mColorPressed = getColor(R.color.primary_pressed);
         mColorRipple = getColor(android.R.color.white);
         mType = TYPE_NORMAL;
         mShadow = true;
@@ -128,9 +128,9 @@ public class FloatingActionButton extends FrameLayout implements Checkable {
         if (attr != null) {
             try {
                 mColorNormal = attr.getColor(R.styleable.FloatingActionButton_fab_colorNormal,
-                        getColor(R.color.material_blue_500));
+                        getColor(R.color.accent_pressed));
                 mColorPressed = attr.getColor(R.styleable.FloatingActionButton_fab_colorPressed,
-                        getColor(R.color.material_blue_600));
+                        getColor(R.color.primary_pressed));
                 mColorRipple = attr.getColor(R.styleable.FloatingActionButton_fab_colorRipple,
                         getColor(android.R.color.white));
                 mShadow = attr.getBoolean(R.styleable.FloatingActionButton_fab_shadow, true);
