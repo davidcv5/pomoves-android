@@ -82,6 +82,21 @@ public class PrefUtils {
     public static final String PREF_WELCOME_DONE = "pref_welcome_done";
 
     /**
+     * Integer indicating pomodoro duration
+     */
+    public static final String PREF_POMODORO_DURATION = "pref_pomodoro_duration";
+
+    /**
+     * Integer indicating short break duration
+     */
+    public static final String PREF_SHORT_BREAK_DURATION = "pref_short_break_duration";
+
+    /**
+     * Integer indicating short duration
+     */
+    public static final String PREF_LONG_BREAK_DURATION = "pref_long_break_duration";
+
+    /**
      * Boolean indicating if we can collect and Analytics
      */
     public static final String PREF_ANALYTICS_ENABLED = "pref_analytics_enabled";
@@ -189,6 +204,36 @@ public class PrefUtils {
         sp.edit().putLong(PREF_CUR_SYNC_INTERVAL, interval).apply();
     }
 
+    public static int getPomodoroDuration(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return Integer.parseInt(sp.getString(PREF_POMODORO_DURATION, "25"));
+    }
+
+    public static void setPomodoroDuration(final Context context, int duration) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        sp.edit().putLong(PREF_POMODORO_DURATION, duration).apply();
+    }
+
+    public static int getShortBreakDuration(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return Integer.parseInt(sp.getString(PREF_SHORT_BREAK_DURATION, "5"));
+    }
+
+    public static void setShortBreakDuration(final Context context, int duration) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        sp.edit().putLong(PREF_SHORT_BREAK_DURATION, duration).apply();
+    }
+
+    public static int getLongBreakDuration(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return Integer.parseInt(sp.getString(PREF_LONG_BREAK_DURATION, "15"));
+    }
+
+    public static void setLongBreakDuration(final Context context, int duration) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        sp.edit().putLong(PREF_LONG_BREAK_DURATION, duration).apply();
+    }
+
     public static void registerOnSharedPreferenceChangeListener(final Context context,
                                                                 SharedPreferences.OnSharedPreferenceChangeListener listener) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
@@ -200,4 +245,5 @@ public class PrefUtils {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         sp.unregisterOnSharedPreferenceChangeListener(listener);
     }
+
 }

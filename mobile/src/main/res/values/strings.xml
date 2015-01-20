@@ -4,9 +4,6 @@
     <string name="app_name">Pomodoro Moves</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="PREF_POMODORO_DURATION">PREF_POMODORO_DURATION</string>
-    <string name="PREF_SHORT_BREAK_DURATION">PREF_SHORT_BREAK_DURATION</string>
-    <string name="PREF_LONG_BREAK_DURATION">PREF_LONG_BREAK_DURATION</string>
     <string name="POMODORO">Pomodoro</string>
     <string name="SHORT_BREAK">Short break</string>
     <string name="LONG_BREAK">Long break</string>
@@ -65,5 +62,24 @@
     <string name="navdrawer_item_settings">Settings</string>
     <string name="navdrawer_item_sign_in">Sign in</string>
     <string name="title_settings">Settings</string>
+
+    <!-- Summary in the Settings screen for the "Pomodoro Duration" option -->
+    <string name="pref_pomodoro_duration_description">The duration of focused intervals.</string>
+
+    <!-- Title in the Settings screen for the "Pomodoro Duration" option -->
+    <string name="pref_pomodoro_duration_title">Focus duration</string>
+
+    <!-- Summary in the Settings screen for the "Short Break" option -->
+    <string name="pref_short_duration_description">The duration of short breaks.</string>
+
+    <!-- Title in the Settings screen for the "Short Break" option -->
+    <string name="pref_short_duration_title">Short break duration</string>
+
+    <!-- Summary in the Settings screen for the "Long Break" option -->
+    <string name="pref_long_duration_description">The duration of long breaks.</string>
+
+    <!-- Title in the Settings screen for the "Long Break" option -->
+    <string name="pref_long_duration_title">Long break duration</string>
+
 
 </resources>

@@ -17,6 +17,7 @@ import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.EventHelper;
 import com.challdoit.pomoves.model.Session;
 import com.challdoit.pomoves.model.SessionHelper;
+import com.challdoit.pomoves.util.PrefUtils;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -249,14 +250,13 @@ public class SessionManager {
     }
 
     private int getEventDuration(int eventType) {
-        int defaultDuration = 10;
         switch (eventType) {
             case Event.POMODORO:
-                return mPrefs.getInt(mAppContext.getString(R.string.PREF_POMODORO_DURATION), defaultDuration);
+                return PrefUtils.getPomodoroDuration(mAppContext);
             case Event.SHORT_BREAK:
-                return mPrefs.getInt(mAppContext.getString(R.string.PREF_SHORT_BREAK_DURATION), defaultDuration);
+                return PrefUtils.getShortBreakDuration(mAppContext);
             case Event.LONG_BREAK:
-                return mPrefs.getInt(mAppContext.getString(R.string.PREF_LONG_BREAK_DURATION), defaultDuration);
+                return PrefUtils.getLongBreakDuration(mAppContext);
         }
 
         return 0;
