@@ -11,4 +11,27 @@
             <enum name="mini" value="1"/>
         </attr>
     </declare-styleable>
+
+    <declare-styleable name="BaseTheme">
+        <attr name="actionBarIconColor" format="color"/>
+        <attr name="actionBarInsetStart" format="dimension"/>
+        <attr name="spinnerBarInsetStart" format="dimension"/>
+        <attr name="popupItemBackground" format="reference"/>
+        <attr name="photoItemForeground" format="reference"/>
+        <attr name="photoItemForegroundBorderless" format="reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="ScrimInsetsView">
+        <attr name="insetForeground" format="reference|color"/>
+    </declare-styleable>
+
+    <declare-styleable name="BezelImageView">
+        <attr name="maskDrawable" format="reference"/>
+        <attr name="borderDrawable" format="reference"/>
+        <attr name="desaturateOnPress" format="boolean"/>
+    </declare-styleable>
+
+    <style name="Widget.Pomoves.EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@drawable/edit_text</item>
+    </style>
 </resources>

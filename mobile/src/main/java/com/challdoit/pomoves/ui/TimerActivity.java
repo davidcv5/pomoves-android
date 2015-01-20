@@ -2,25 +2,19 @@ package com.challdoit.pomoves.ui;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.Toolbar;
 
 import com.challdoit.pomoves.R;
+import com.challdoit.pomoves.util.UIUtils;
 
 public class TimerActivity extends BaseActivity {
+
+    private int mHeaderColor = 0; // 0 means not customized
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        toolbar.setTitle("My Toolbar");
-        toolbar.setSubtitle("subtitle");
-
-        toolbar.setNavigationIcon(R.drawable.ic_drawer);
-
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_timer);
 
         FragmentManager manager = getSupportFragmentManager();
         manager.beginTransaction().replace(
@@ -28,5 +22,23 @@ public class TimerActivity extends BaseActivity {
                 TimerFragment.newInstance()
         ).commit();
 
+        updateHeaderColor();
+    }
+
+    private void updateHeaderColor() {
+        mHeaderColor = 0;
+        findViewById(R.id.toolbar_actionbar).setBackgroundColor(
+                mHeaderColor == 0
+                        ? getResources().getColor(R.color.theme_primary)
+                        : mHeaderColor);
+        setNormalStatusBarColor(
+                mHeaderColor == 0
+                        ? getThemedStatusBarColor()
+                        : UIUtils.scaleColor(mHeaderColor, 0.8f, false));
+    }
+
+    @Override
+    protected int getSelfNavDrawerItem() {
+        return NAVDRAWER_ITEM_TIMER;
     }
 }

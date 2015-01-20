@@ -1,4 +1,4 @@
-package com.challdoit.pomoves.data;
+package com.challdoit.pomoves.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -10,6 +10,8 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
+import com.challdoit.pomoves.data.PomovesContract;
+import com.challdoit.pomoves.data.PomovesDbHelper;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
 
