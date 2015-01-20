@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.challdoit.pomoves.data.PomovesContract;
-import com.challdoit.pomoves.data.PomovesProvider;
+import com.challdoit.pomoves.provider.PomovesProvider;
 
 public class EventHelper {
 

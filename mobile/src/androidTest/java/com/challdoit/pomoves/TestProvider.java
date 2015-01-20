@@ -10,8 +10,8 @@ import android.util.Log;
 import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.data.PomovesContract.EventEntry;
 import com.challdoit.pomoves.data.PomovesContract.SessionEntry;
-import com.challdoit.pomoves.data.PomovesProvider.EventCursor;
-import com.challdoit.pomoves.data.PomovesProvider.SessionCursor;
+import com.challdoit.pomoves.provider.PomovesProvider.EventCursor;
+import com.challdoit.pomoves.provider.PomovesProvider.SessionCursor;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
 
