@@ -206,13 +206,15 @@ public class TestProvider extends AndroidTestCase {
     }
 
     private ContentValues getSessionValues() {
-        String testStats = "some stats";
         int testDuration = 5;
+
+        Session testSession = new Session();
+        testSession.getStats().waterCount = 2;
 
         ContentValues values = new ContentValues();
         values.put(SessionEntry.COLUMN_DATE_TEXT,
                 PomovesContract.getDbDateString(testDate));
-        values.put(SessionEntry.COLUMN_STATS, testStats);
+        values.put(SessionEntry.COLUMN_STATS, testSession.getStatsJson());
         values.put(SessionEntry.COLUMN_DURATION, testDuration);
         return values;
     }
@@ -298,7 +300,7 @@ public class TestProvider extends AndroidTestCase {
             Session session = sessionCursor.getSession();
 
             assertEquals(sessionRowId, session.getId());
-            assertEquals(values.getAsString(SessionEntry.COLUMN_STATS), session.getStats());
+            assertEquals(values.getAsString(SessionEntry.COLUMN_STATS), session.getStatsJson());
             assertEquals(PomovesContract.getDateFromDb(
                             values.getAsString(SessionEntry.COLUMN_DATE_TEXT)),
                     session.getDate());

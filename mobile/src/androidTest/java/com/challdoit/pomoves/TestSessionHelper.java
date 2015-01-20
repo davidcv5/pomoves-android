@@ -26,7 +26,7 @@ public class TestSessionHelper extends AndroidTestCase {
         final String testStats = "some stats";
 
         session.setDate(now);
-        session.setStats(testStats);
+        session.getStats().info = testStats;
 
         SessionHelper.update(getContext(), session);
 
@@ -37,6 +37,6 @@ public class TestSessionHelper extends AndroidTestCase {
         assertEquals(
                 PomovesContract.getDbDateString(now),
                 PomovesContract.getDbDateString(loadedSession.getDate()));
-        assertEquals(testStats, loadedSession.getStats());
+        assertEquals(testStats, loadedSession.getStats().info);
     }
 }

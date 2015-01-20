@@ -60,16 +60,9 @@ public class TimerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_timer, container, false);
 
-        long timeRemaining = mSessionManager.getCurrentEndTime() - System.currentTimeMillis();
-
-        mPomodoroCountdown = new PomodoroCountdown(timeRemaining, 1000);
-
         mTimerText = (TextView) view.findViewById(R.id.timerTextView);
-        if (mSessionManager.isTrackingSession()) {
-            mTimerText.setText(getFormattedTime(timeRemaining));
-            mPomodoroCountdown.start();
-        } else
-            mTimerText.setText(getFormattedTime(0));
+
+        setupCountdown();
 
         mTimerButton = (FloatingActionButton) view.findViewById(R.id.timerButton);
 
@@ -89,9 +82,23 @@ public class TimerFragment extends Fragment {
         return view;
     }
 
+    private void setupCountdown() {
+
+        long timeRemaining = mSessionManager.getCurrentEndTime() - System.currentTimeMillis();
+
+        mPomodoroCountdown = new PomodoroCountdown(timeRemaining, 1000);
+
+        if (mSessionManager.isTrackingSession()) {
+            mTimerText.setText(getFormattedTime(timeRemaining));
+            mPomodoroCountdown.start();
+        } else
+            mTimerText.setText(getFormattedTime(0));
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        setupCountdown();
         if (mTimerButton != null)
             mTimerButton.setChecked(mSessionManager.isTrackingSession());
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
@@ -104,6 +111,7 @@ public class TimerFragment extends Fragment {
         super.onPause();
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(
                 mBroadcastReceiver);
+        mPomodoroCountdown.cancel();
     }
 
     private String getFormattedTime(long timeRemaining) {

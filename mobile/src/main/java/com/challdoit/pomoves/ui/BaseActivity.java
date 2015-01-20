@@ -123,6 +123,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     // icons for navdrawer items (indices must correspond to above array)
     private static final int[] NAVDRAWER_ICON_RES_ID = new int[]{
             R.drawable.ic_play,  // Timer
+            R.drawable.ic_launcher, // Stats
             0, // Sign in
             R.drawable.ic_drawer_settings
     };
@@ -927,7 +928,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     protected void refreshAccountDependantData() {
         // Force local data refresh for data that depends on the logged user:
-        LOGD(TAG, "Refreshing MySchedule data");
+        LOGD(TAG, "Refreshing Pomoves data");
     }
 
     protected void retryAuth() {
