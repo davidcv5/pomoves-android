@@ -85,7 +85,7 @@ public class AccountUtils {
     public static boolean setActiveAccount(final Context context, final String accountName) {
         LOGD(TAG, "Set active account to: " + accountName);
         SharedPreferences sp = getSharedPreferences(context);
-        sp.edit().putString(PREF_ACTIVE_ACCOUNT, accountName).commit();
+        sp.edit().putString(PREF_ACTIVE_ACCOUNT, accountName).apply();
         return true;
     }
 
@@ -110,7 +110,7 @@ public class AccountUtils {
                 + accountName);
         SharedPreferences sp = getSharedPreferences(context);
         sp.edit().putString(makeAccountSpecificPrefKey(accountName, PREFIX_PREF_AUTH_TOKEN),
-                authToken).commit();
+                authToken).apply();
         LOGV(TAG, "Auth Token: " + authToken);
     }
 
@@ -130,7 +130,7 @@ public class AccountUtils {
     public static void setPlusProfileId(final Context context, final String accountName, final String profileId) {
         SharedPreferences sp = getSharedPreferences(context);
         sp.edit().putString(makeAccountSpecificPrefKey(accountName, PREFIX_PREF_PLUS_PROFILE_ID),
-                profileId).commit();
+                profileId).apply();
     }
 
     public static String getPlusProfileId(final Context context) {
@@ -154,7 +154,7 @@ public class AccountUtils {
     public static void setPlusName(final Context context, final String accountName, final String name) {
         SharedPreferences sp = getSharedPreferences(context);
         sp.edit().putString(makeAccountSpecificPrefKey(accountName, PREFIX_PREF_PLUS_NAME),
-                name).commit();
+                name).apply();
     }
 
     public static String getPlusName(final Context context) {
@@ -166,7 +166,7 @@ public class AccountUtils {
     public static void setPlusImageUrl(final Context context, final String accountName, final String imageUrl) {
         SharedPreferences sp = getSharedPreferences(context);
         sp.edit().putString(makeAccountSpecificPrefKey(accountName, PREFIX_PREF_PLUS_IMAGE_URL),
-                imageUrl).commit();
+                imageUrl).apply();
     }
 
     public static String getPlusImageUrl(final Context context) {

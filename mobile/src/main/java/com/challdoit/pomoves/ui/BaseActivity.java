@@ -49,6 +49,7 @@ import com.challdoit.pomoves.R;
 import com.challdoit.pomoves.ui.widget.ScrimInsetsScrollView;
 import com.challdoit.pomoves.util.AccountUtils;
 import com.challdoit.pomoves.util.AnalyticsManager;
+import com.challdoit.pomoves.util.ImageLoader;
 import com.challdoit.pomoves.util.LUtils;
 import com.challdoit.pomoves.util.LoginAndAuthHelper;
 import com.challdoit.pomoves.util.PlayServicesUtils;
@@ -104,8 +105,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
     // not a list of items that are necessarily *present* in the Nav Drawer; rather,
     // it's a list of all possible items.
     protected static final int NAVDRAWER_ITEM_TIMER = 0;
-    protected static final int NAVDRAWER_ITEM_SIGN_IN = 1;
-    protected static final int NAVDRAWER_ITEM_SETTINGS = 2;
+    protected static final int NAVDRAWER_ITEM_STATS = 1;
+    protected static final int NAVDRAWER_ITEM_SIGN_IN = 2;
+    protected static final int NAVDRAWER_ITEM_SETTINGS = 3;
     protected static final int NAVDRAWER_ITEM_INVALID = -1;
     protected static final int NAVDRAWER_ITEM_SEPARATOR = -2;
     protected static final int NAVDRAWER_ITEM_SEPARATOR_SPECIAL = -3;
@@ -113,6 +115,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     // titles for navdrawer items (indices must correspond to the above)
     private static final int[] NAVDRAWER_TITLE_RES_ID = new int[]{
             R.string.navdrawer_item_timer,
+            R.string.navdrawer_item_stats,
             R.string.navdrawer_item_sign_in,
             R.string.navdrawer_item_settings
     };
@@ -170,7 +173,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     private int mNormalStatusBarColor;
     private int mProgressBarTopWhenActionBarShown;
     private static final TypeEvaluator ARGB_EVALUATOR = new ArgbEvaluator();
-    //private ImageLoader mImageLoader;
+    private ImageLoader mImageLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +187,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
 //            finish();
 //        }
 
-//        mImageLoader = new ImageLoader(this);
+        mImageLoader = new ImageLoader(this);
         mHandler = new Handler();
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -348,6 +351,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
         if (AccountUtils.hasActiveAccount(this)) {
             // Only logged-in users can save sessions, so if there is no active account,
             // there is no My Schedule
+            mNavDrawerItems.add(NAVDRAWER_ITEM_STATS);
         } else {
             // If no active account, show Sign In
             mNavDrawerItems.add(NAVDRAWER_ITEM_SIGN_IN);
@@ -469,13 +473,13 @@ public abstract class BaseActivity extends ActionBarActivity implements
         }
 
         String imageUrl = AccountUtils.getPlusImageUrl(this);
-        if (false && imageUrl != null) {
-            //mImageLoader.loadImage(imageUrl, profileImageView);
+        if (imageUrl != null) {
+            mImageLoader.loadImage(imageUrl, profileImageView);
         }
 
         String coverImageUrl = AccountUtils.getPlusCoverUrl(this);
-        if (false && coverImageUrl != null) {
-            //mImageLoader.loadImage(coverImageUrl, coverImageView);
+        if (coverImageUrl != null) {
+            mImageLoader.loadImage(coverImageUrl, coverImageView);
         } else {
             coverImageView.setImageResource(R.drawable.default_cover);
         }
@@ -502,7 +506,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
         });
         setupAccountBoxToggle();
 
-        //populateAccountList(accounts);
+        populateAccountList(accounts);
     }
 
     private void populateAccountList(List<Account> accounts) {
@@ -516,9 +520,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
                     .setText(account.name);
             final String accountName = account.name;
             String imageUrl = AccountUtils.getPlusImageUrl(this, accountName);
-            if (false && !TextUtils.isEmpty(imageUrl)) {
-//                mImageLoader.loadImage(imageUrl,
-//                        (ImageView) itemView.findViewById(R.id.profile_image));
+            if (!TextUtils.isEmpty(imageUrl)) {
+                mImageLoader.loadImage(imageUrl,
+                        (ImageView) itemView.findViewById(R.id.profile_image));
             }
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -531,7 +535,6 @@ public abstract class BaseActivity extends ActionBarActivity implements
                         Toast.makeText(BaseActivity.this, R.string.no_connection_cant_login,
                                 Toast.LENGTH_SHORT).show();
                         mDrawerLayout.closeDrawer(Gravity.START);
-                        return;
                     } else {
                         LOGD(TAG, "User requested switch to account: " + accountName);
                         AccountUtils.setActiveAccount(BaseActivity.this, accountName);
@@ -628,6 +631,11 @@ public abstract class BaseActivity extends ActionBarActivity implements
         switch (item) {
             case NAVDRAWER_ITEM_TIMER:
                 intent = new Intent(this, TimerActivity.class);
+                startActivity(intent);
+                finish();
+                break;
+            case NAVDRAWER_ITEM_STATS:
+                intent = new Intent(this, StatsActivity.class);
                 startActivity(intent);
                 finish();
                 break;

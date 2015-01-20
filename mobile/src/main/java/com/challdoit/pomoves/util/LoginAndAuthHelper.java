@@ -54,7 +54,6 @@ public class LoginAndAuthHelper implements
     // Auth scopes we need
     public static final String AUTH_SCOPES[] = {
             Scopes.PLUS_LOGIN,
-            Scopes.DRIVE_APPFOLDER,
             "https://www.googleapis.com/auth/plus.profile.emails.read"};
 
     static final String AUTH_TOKEN_TYPE;
@@ -328,7 +327,7 @@ public class LoginAndAuthHelper implements
                 LOGE(TAG, "Plus response was empty! Failed to load profile.");
             }
         } else {
-            LOGE(TAG, "Failed to load plus proflie, error " + loadPeopleResult.getStatus().getStatusCode());
+            LOGE(TAG, "Failed to load plus profile, error " + loadPeopleResult.getStatus().getStatusCode());
         }
     }
 
