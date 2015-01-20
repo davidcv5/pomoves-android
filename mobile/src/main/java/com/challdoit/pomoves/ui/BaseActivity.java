@@ -45,7 +45,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.challdoit.pomoves.Config;
 import com.challdoit.pomoves.R;
 import com.challdoit.pomoves.ui.widget.ScrimInsetsScrollView;
 import com.challdoit.pomoves.util.AccountUtils;
@@ -106,8 +105,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
     // not a list of items that are necessarily *present* in the Nav Drawer; rather,
     // it's a list of all possible items.
     protected static final int NAVDRAWER_ITEM_TIMER = 0;
-    protected static final int NAVDRAWER_ITEM_SIGN_IN = 1;
-    protected static final int NAVDRAWER_ITEM_SETTINGS = 2;
+    protected static final int NAVDRAWER_ITEM_STATS = 1;
+    protected static final int NAVDRAWER_ITEM_SIGN_IN = 2;
+    protected static final int NAVDRAWER_ITEM_SETTINGS = 3;
     protected static final int NAVDRAWER_ITEM_INVALID = -1;
     protected static final int NAVDRAWER_ITEM_SEPARATOR = -2;
     protected static final int NAVDRAWER_ITEM_SEPARATOR_SPECIAL = -3;
@@ -115,6 +115,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     // titles for navdrawer items (indices must correspond to the above)
     private static final int[] NAVDRAWER_TITLE_RES_ID = new int[]{
             R.string.navdrawer_item_timer,
+            R.string.navdrawer_item_stats,
             R.string.navdrawer_item_sign_in,
             R.string.navdrawer_item_settings
     };
@@ -350,11 +351,11 @@ public abstract class BaseActivity extends ActionBarActivity implements
         if (AccountUtils.hasActiveAccount(this)) {
             // Only logged-in users can save sessions, so if there is no active account,
             // there is no My Schedule
+            mNavDrawerItems.add(NAVDRAWER_ITEM_STATS);
         } else {
             // If no active account, show Sign In
             mNavDrawerItems.add(NAVDRAWER_ITEM_SIGN_IN);
         }
-        mNavDrawerItems.add(NAVDRAWER_ITEM_SIGN_IN);
 
         // Other items that are always in the nav drawer
         mNavDrawerItems.add(NAVDRAWER_ITEM_SEPARATOR_SPECIAL);
@@ -630,6 +631,11 @@ public abstract class BaseActivity extends ActionBarActivity implements
         switch (item) {
             case NAVDRAWER_ITEM_TIMER:
                 intent = new Intent(this, TimerActivity.class);
+                startActivity(intent);
+                finish();
+                break;
+            case NAVDRAWER_ITEM_STATS:
+                intent = new Intent(this, StatsActivity.class);
                 startActivity(intent);
                 finish();
                 break;

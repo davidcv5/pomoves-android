@@ -1,7 +1,8 @@
 <resources>
 
-    <style name="FrameworkRoot.Theme" parent="Theme.AppCompat.Light" />
-    <style name="FrameworkRoot.Widget" parent="Theme.AppCompat" />
+    <style name="FrameworkRoot.Theme" parent="Theme.AppCompat.Light"/>
+
+    <style name="FrameworkRoot.Widget" parent="Theme.AppCompat"/>
 
     <style name="Theme" parent="FrameworkRoot.Theme">
         <!-- Only needed for pre-L -->
@@ -35,15 +36,20 @@
         <item name="android:popupMenuStyle">@style/Widget.Pomoves.PopupMenu</item>
         <item name="android:listPopupWindowStyle">@style/Widget.Pomoves.PopupMenu</item>
         <item name="android:dropDownListViewStyle">@style/Widget.Pomoves.ListView.DropDown</item>
-        <item name="android:textAppearanceLargePopupMenu">@style/TextAppearance.LargePopupMenu</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/TextAppearance.LargePopupMenu
+        </item>
 
         <item name="searchViewStyle">@style/Widget.Pomoves.SearchView</item>
 
     </style>
 
-    <style name="Theme.Pomoves" parent="Theme.Pomoves.Base" />
+    <style name="Theme.Pomoves" parent="Theme.Pomoves.Base"/>
 
-    <style name="Theme.Pomoves.WithNavDrawer" parent="Theme.Pomoves" />
+    <style name="Theme.Pomoves.WithNavDrawer" parent="Theme.Pomoves"/>
+
+    <style name="Theme.Pomoves.Timer" parent="Theme.Pomoves.WithNavDrawer"/>
+
+    <style name="Theme.Pomoves.Stats" parent="Theme.Pomoves.WithNavDrawer"/>
 
     <style name="Widget.Pomoves.PopupMenu" parent="Widget.AppCompat.Light.PopupMenu">
         <item name="android:dropDownSelector">?popupItemBackground</item>
@@ -59,7 +65,7 @@
         <item name="android:textColor">@color/body_text_1</item>
     </style>
 
-    <style name="Widget.Pomoves.SearchView" parent="Widget.AppCompat.SearchView" />
+    <style name="Widget.Pomoves.SearchView" parent="Widget.AppCompat.SearchView"/>
 
     <style name="ActionBar.TitleText" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textColor">#fff</item>
@@ -72,7 +78,7 @@
         <item name="colorControlHighlight">#3fff</item>
     </style>
 
-    <style name="ActionBarPopupThemeOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="ActionBarPopupThemeOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
     <style name="HeaderBar">
         <item name="android:background">?colorPrimary</item>
