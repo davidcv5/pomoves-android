@@ -2,8 +2,8 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/keyline_1"
+                android:paddingRight="@dimen/keyline_1"
                 android:paddingTop="@dimen/keyline_1"
                 android:paddingBottom="@dimen/keyline_1"
                 tools:context="com.challdoit.pomoves.ui.StatsActivity$PlaceholderFragment">

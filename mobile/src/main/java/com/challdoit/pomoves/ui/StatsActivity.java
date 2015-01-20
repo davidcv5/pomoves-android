@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 
 import com.challdoit.pomoves.R;
-import com.challdoit.pomoves.util.UIUtils;
 
 public class StatsActivity extends BaseActivity {
 
