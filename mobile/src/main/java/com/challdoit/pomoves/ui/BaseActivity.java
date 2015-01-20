@@ -45,10 +45,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.challdoit.pomoves.Config;
 import com.challdoit.pomoves.R;
 import com.challdoit.pomoves.ui.widget.ScrimInsetsScrollView;
 import com.challdoit.pomoves.util.AccountUtils;
 import com.challdoit.pomoves.util.AnalyticsManager;
+import com.challdoit.pomoves.util.ImageLoader;
 import com.challdoit.pomoves.util.LUtils;
 import com.challdoit.pomoves.util.LoginAndAuthHelper;
 import com.challdoit.pomoves.util.PlayServicesUtils;
@@ -170,7 +172,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     private int mNormalStatusBarColor;
     private int mProgressBarTopWhenActionBarShown;
     private static final TypeEvaluator ARGB_EVALUATOR = new ArgbEvaluator();
-    //private ImageLoader mImageLoader;
+    private ImageLoader mImageLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +186,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
 //            finish();
 //        }
 
-//        mImageLoader = new ImageLoader(this);
+        mImageLoader = new ImageLoader(this);
         mHandler = new Handler();
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -352,6 +354,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
             // If no active account, show Sign In
             mNavDrawerItems.add(NAVDRAWER_ITEM_SIGN_IN);
         }
+        mNavDrawerItems.add(NAVDRAWER_ITEM_SIGN_IN);
 
         // Other items that are always in the nav drawer
         mNavDrawerItems.add(NAVDRAWER_ITEM_SEPARATOR_SPECIAL);
@@ -469,13 +472,13 @@ public abstract class BaseActivity extends ActionBarActivity implements
         }
 
         String imageUrl = AccountUtils.getPlusImageUrl(this);
-        if (false && imageUrl != null) {
-            //mImageLoader.loadImage(imageUrl, profileImageView);
+        if (imageUrl != null) {
+            mImageLoader.loadImage(imageUrl, profileImageView);
         }
 
         String coverImageUrl = AccountUtils.getPlusCoverUrl(this);
-        if (false && coverImageUrl != null) {
-            //mImageLoader.loadImage(coverImageUrl, coverImageView);
+        if (coverImageUrl != null) {
+            mImageLoader.loadImage(coverImageUrl, coverImageView);
         } else {
             coverImageView.setImageResource(R.drawable.default_cover);
         }
@@ -502,7 +505,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
         });
         setupAccountBoxToggle();
 
-        //populateAccountList(accounts);
+        populateAccountList(accounts);
     }
 
     private void populateAccountList(List<Account> accounts) {
@@ -516,9 +519,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
                     .setText(account.name);
             final String accountName = account.name;
             String imageUrl = AccountUtils.getPlusImageUrl(this, accountName);
-            if (false && !TextUtils.isEmpty(imageUrl)) {
-//                mImageLoader.loadImage(imageUrl,
-//                        (ImageView) itemView.findViewById(R.id.profile_image));
+            if (!TextUtils.isEmpty(imageUrl)) {
+                mImageLoader.loadImage(imageUrl,
+                        (ImageView) itemView.findViewById(R.id.profile_image));
             }
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -531,7 +534,6 @@ public abstract class BaseActivity extends ActionBarActivity implements
                         Toast.makeText(BaseActivity.this, R.string.no_connection_cant_login,
                                 Toast.LENGTH_SHORT).show();
                         mDrawerLayout.closeDrawer(Gravity.START);
-                        return;
                     } else {
                         LOGD(TAG, "User requested switch to account: " + accountName);
                         AccountUtils.setActiveAccount(BaseActivity.this, accountName);

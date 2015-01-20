@@ -328,7 +328,7 @@ public class LoginAndAuthHelper implements
                 LOGE(TAG, "Plus response was empty! Failed to load profile.");
             }
         } else {
-            LOGE(TAG, "Failed to load plus proflie, error " + loadPeopleResult.getStatus().getStatusCode());
+            LOGE(TAG, "Failed to load plus profile, error " + loadPeopleResult.getStatus().getStatusCode());
         }
     }
 
