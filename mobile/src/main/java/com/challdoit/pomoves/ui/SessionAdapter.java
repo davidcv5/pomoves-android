@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
-import com.challdoit.pomoves.data.PomovesProvider;
+import com.challdoit.pomoves.provider.PomovesProvider;
 import com.challdoit.pomoves.model.Session;
 
 public class SessionAdapter extends CursorAdapter {

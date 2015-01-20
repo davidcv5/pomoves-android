@@ -8,7 +8,7 @@ import android.net.Uri;
 
 import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.data.PomovesContract.SessionEntry;
-import com.challdoit.pomoves.data.PomovesProvider.SessionCursor;
+import com.challdoit.pomoves.provider.PomovesProvider.SessionCursor;
 
 public class SessionHelper {
 
