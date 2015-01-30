@@ -22,4 +22,13 @@
         android:numeric="integer"
         android:summary="@string/pref_long_duration_description"
         android:title="@string/pref_long_duration_title"/>
+
+    <PreferenceCategory
+        android:title="@string/pref_connect_title">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_track_fit_activity"
+            android:summary="@string/pref_track_fit_activity_description"
+            android:title="@string/pref_track_fit_activity_title"/>
+    </PreferenceCategory>
 </PreferenceScreen>

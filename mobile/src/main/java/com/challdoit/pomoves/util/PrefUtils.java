@@ -99,6 +99,11 @@ public class PrefUtils {
     /**
      * Boolean indicating if we can collect and Analytics
      */
+    public static final String PREF_TRACK_FIT_ACTIVITY_ENABLED = "pref_track_fit_activity";
+
+    /**
+     * Boolean indicating if we can collect and Analytics
+     */
     public static final String PREF_ANALYTICS_ENABLED = "pref_analytics_enabled";
 
     public static TimeZone getDisplayTimeZone(Context context) {
@@ -187,6 +192,11 @@ public class PrefUtils {
     public static void markSyncSucceededNow(final Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         sp.edit().putLong(PREF_LAST_SYNC_SUCCEEDED, UIUtils.getCurrentTime(context)).commit();
+    }
+
+    public static boolean isFitApiEnabled(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getBoolean(PREF_TRACK_FIT_ACTIVITY_ENABLED, false);
     }
 
     public static boolean isAnalyticsEnabled(final Context context) {

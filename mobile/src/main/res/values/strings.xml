@@ -94,5 +94,8 @@
 
     <string name="title_activity_stats">Stats</string>
     <string name="navdrawer_item_stats">Stats</string>
+    <string name="pref_track_fit_activity_description">Enable access to Google Fit API</string>
+    <string name="pref_track_fit_activity_title">Google Fit</string>
+    <string name="pref_connect_title">Connect</string>
 
 </resources>

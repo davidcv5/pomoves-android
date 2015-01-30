@@ -45,7 +45,6 @@ public class AccountUtils {
 
     public static final String AUTH_SCOPES[] = {
             Scopes.PLUS_LOGIN,
-            Scopes.DRIVE_APPFOLDER,
             "https://www.googleapis.com/auth/userinfo.email"};
 
     static final String AUTH_TOKEN_TYPE;

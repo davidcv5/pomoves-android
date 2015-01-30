@@ -20,6 +20,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.plus.People;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
@@ -103,7 +104,7 @@ public class LoginAndAuthHelper implements
     public interface Callbacks {
         void onPlusInfoLoaded(String accountName);
 
-        void onAuthSuccess(String accountName, boolean newlyAuthenticated);
+        void onAuthSuccess(String accountName, boolean newlyAuthenticated, GoogleApiClient client);
 
         void onAuthFailure(String accountName);
     }
@@ -137,8 +138,12 @@ public class LoginAndAuthHelper implements
     }
 
     public void retryAuthByUserRequest() {
+        retryAuthByUserRequest(false);
+    }
+
+    public void retryAuthByUserRequest(boolean incremental) {
         LOGD(TAG, "Retrying sign-in/auth (user-initiated).");
-        if (!mGoogleApiClient.isConnected()) {
+        if (!mGoogleApiClient.isConnected() || incremental) {
             sCanShowAuthUi = sCanShowSignInUi = true;
             PrefUtils.markUserRefusedSignIn(mAppContext, false);
             mGoogleApiClient.connect();
@@ -179,6 +184,11 @@ public class LoginAndAuthHelper implements
             GoogleApiClient.Builder builder = new GoogleApiClient.Builder(activity);
             for (String scope : AUTH_SCOPES) {
                 builder.addScope(new Scope(scope));
+            }
+            if (PrefUtils.isFitApiEnabled(mAppContext)) {
+                builder.addApi(Fitness.API)
+                        .addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ))
+                        .addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE));
             }
             mGoogleApiClient = builder.addApi(Plus.API)
                     .addConnectionCallbacks(this)
@@ -406,7 +416,7 @@ public class LoginAndAuthHelper implements
         LOGD(TAG, "Auth success for account " + mAccountName + ", newlyAuthenticated=" + newlyAuthenticated);
         Callbacks callbacks;
         if (null != (callbacks = mCallbacksRef.get())) {
-            callbacks.onAuthSuccess(mAccountName, newlyAuthenticated);
+            callbacks.onAuthSuccess(mAccountName, newlyAuthenticated, mGoogleApiClient);
         }
     }
 

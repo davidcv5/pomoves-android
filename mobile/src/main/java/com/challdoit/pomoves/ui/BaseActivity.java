@@ -49,6 +49,7 @@ import com.challdoit.pomoves.R;
 import com.challdoit.pomoves.ui.widget.ScrimInsetsScrollView;
 import com.challdoit.pomoves.util.AccountUtils;
 import com.challdoit.pomoves.util.AnalyticsManager;
+import com.challdoit.pomoves.util.FitUtils;
 import com.challdoit.pomoves.util.ImageLoader;
 import com.challdoit.pomoves.util.LUtils;
 import com.challdoit.pomoves.util.LoginAndAuthHelper;
@@ -56,6 +57,7 @@ import com.challdoit.pomoves.util.PlayServicesUtils;
 import com.challdoit.pomoves.util.PrefUtils;
 import com.challdoit.pomoves.util.UIUtils;
 import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -407,10 +409,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(PrefUtils.PREF_ATTENDEE_AT_VENUE)) {
-            LOGD(TAG, "Attendee at venue preference changed, repopulating nav drawer and menu.");
-            populateNavDrawer();
-            invalidateOptionsMenu();
+        if (key.equals(PrefUtils.PREF_TRACK_FIT_ACTIVITY_ENABLED)
+                && PrefUtils.isFitApiEnabled(this)) {
+            retryAuthIncremental();
         }
     }
 
@@ -425,7 +426,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
             mainContent.setAlpha(0);
             mainContent.animate().alpha(1).setDuration(MAIN_CONTENT_FADEIN_DURATION);
         } else {
-            LOGW(TAG, "No view with ID main_content to fade in.");
+            LOGW(TAG, "No view with ID content_frame to fade in.");
         }
     }
 
@@ -906,7 +907,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
      *                           If false, it's a returning user.
      */
     @Override
-    public void onAuthSuccess(String accountName, boolean newlyAuthenticated) {
+    public void onAuthSuccess(String accountName, boolean newlyAuthenticated, GoogleApiClient client) {
         Account account = new Account(accountName, GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
         LOGD(TAG, "onAuthSuccess, account " + accountName + ", newlyAuthenticated=" + newlyAuthenticated);
 
@@ -918,6 +919,14 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
         setupAccountBox();
         populateNavDrawer();
+
+        if(PrefUtils.isFitApiEnabled(this)){
+            setupFitApi(client);
+        }
+    }
+
+    private void setupFitApi(GoogleApiClient client) {
+        new FitUtils(client).init();
     }
 
     @Override
@@ -926,6 +935,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
         refreshAccountDependantData();
     }
 
+
     protected void refreshAccountDependantData() {
         // Force local data refresh for data that depends on the logged user:
         LOGD(TAG, "Refreshing Pomoves data");
@@ -933,6 +943,10 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     protected void retryAuth() {
         mLoginAndAuthHelper.retryAuthByUserRequest();
+    }
+
+    protected void retryAuthIncremental() {
+        mLoginAndAuthHelper.retryAuthByUserRequest(true);
     }
 
     /**
