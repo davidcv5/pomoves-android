@@ -91,7 +91,7 @@ public class PomovesReceiver extends BroadcastReceiver {
         return
                 new NotificationCompat.Builder(context)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
-                        .setSmallIcon(R.drawable.ic_play)
+                        .setSmallIcon(R.drawable.ic_pomodoro_notification)
                         .setContentTitle("My notification")
                         .setContentText(isRunning ?
                                 "Running: " + Event.getName(context,
