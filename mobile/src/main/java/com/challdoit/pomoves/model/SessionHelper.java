@@ -48,7 +48,7 @@ public class SessionHelper {
         ContentValues values = new ContentValues();
         values.put(PomovesContract.SessionEntry.COLUMN_DATE_TEXT,
                 PomovesContract.getDbDateString(session.getDate()));
-        values.put(PomovesContract.SessionEntry.COLUMN_STATS, session.getStats());
+        values.put(PomovesContract.SessionEntry.COLUMN_STATS, session.getStatsJson());
         return values;
     }
 }

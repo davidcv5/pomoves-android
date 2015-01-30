@@ -46,8 +46,8 @@ public class TestSessionManager extends AndroidTestCase {
         eventCursor.close();
     }
 
-    private void testClearPreferences() {
-        manager.clearPreferences();
+    public void testClearPreferences() {
+        manager.clearSession();
     }
 
     public void testSessionLifecycle() {

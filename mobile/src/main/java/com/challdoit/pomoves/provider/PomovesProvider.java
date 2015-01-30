@@ -15,6 +15,9 @@ import com.challdoit.pomoves.data.PomovesDbHelper;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PomovesProvider extends ContentProvider {
 
     private static final int SESSION = 100;
@@ -293,9 +296,17 @@ public class PomovesProvider extends ContentProvider {
             session.setId(getLong(getColumnIndex(PomovesContract.SessionEntry._ID)));
             session.setDate(PomovesContract.getDateFromDb(
                     getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
-            session.setStats(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
+            session.setStatsFromJson(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
 
             return session;
+        }
+
+        public List<Session> toList() {
+            List<Session> result = new ArrayList<>();
+            while (moveToNext())
+                result.add(getSession());
+
+            return result;
         }
     }
 
