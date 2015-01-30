@@ -90,7 +90,7 @@
     </style>
 
     <style name="Timer.TitleText" parent="TextAppearance.AppCompat.Medium">
-        <item name="android:textColor">#fff</item>
+        <item name="android:textColor">@color/body_text_2</item>
         <item name="android:textSize">18sp</item>
     </style>
 </resources>
