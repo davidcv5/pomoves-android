@@ -88,4 +88,9 @@
     <style name="TransparentActionBar" parent="">
         <item name="android:background">@null</item>
     </style>
+
+    <style name="Timer.TitleText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">18sp</item>
+    </style>
 </resources>
