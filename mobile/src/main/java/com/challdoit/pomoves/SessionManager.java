@@ -16,6 +16,8 @@ import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.EventHelper;
 import com.challdoit.pomoves.model.Session;
 import com.challdoit.pomoves.model.SessionHelper;
+import com.challdoit.pomoves.util.AccountUtils;
+import com.challdoit.pomoves.util.FitUtils;
 import com.challdoit.pomoves.util.PrefUtils;
 
 import java.util.Calendar;
@@ -45,6 +47,7 @@ public class SessionManager {
     private int mPomodoroCount;
     private Session mSession;
     private long mCurrentEndTime;
+    private FitUtils mFitUtils;
 
     private SessionManager(Context appContext) {
         mAppContext = appContext;
@@ -192,6 +195,9 @@ public class SessionManager {
                     timer);
         }
 
+        if (eventType == Event.SHORT_BREAK || eventType == Event.LONG_BREAK)
+            startRecordingActivity();
+
         Session session = getCurrentSession();
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
         Event event = new Event(session.getId(), eventType);
@@ -204,6 +210,21 @@ public class SessionManager {
         notifyChange();
     }
 
+    private FitUtils getFitUtils() {
+        if (mFitUtils == null)
+            mFitUtils = new FitUtils(mAppContext, null,
+                    AccountUtils.getActiveAccountName(mAppContext));
+        return mFitUtils;
+    }
+
+    private void startRecordingActivity() {
+        getFitUtils().startSession();
+    }
+
+    private void stopRecordingActivity() {
+        getFitUtils().stopSession();
+    }
+
     public void stopEvent() {
         stopEvent(false);
     }
@@ -212,6 +233,10 @@ public class SessionManager {
         cancelIntentIfRunning();
 
         int currentEventType = getCurrentEventType();
+
+        if (currentEventType == Event.SHORT_BREAK || currentEventType == Event.LONG_BREAK)
+            stopRecordingActivity();
+
         Log.d(TAG, String.format("Stopping Event: %s, Count: %s",
                 Event.getName(mAppContext, currentEventType),
                 mPomodoroCount));

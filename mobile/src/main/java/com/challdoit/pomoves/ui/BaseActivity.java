@@ -407,10 +407,15 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(PrefUtils.PREF_ATTENDEE_AT_VENUE)) {
-            LOGD(TAG, "Attendee at venue preference changed, repopulating nav drawer and menu.");
-            populateNavDrawer();
-            invalidateOptionsMenu();
+        if (key.equals(PrefUtils.PREF_GOOGLE_FIT_ENABLED)) {
+            if (PrefUtils.isGoogleFitEnabled(this)) {
+                AccountUtils.setAuthToken(this, null);
+                if (mLoginAndAuthHelper != null)
+                    mLoginAndAuthHelper.stop();
+                mLoginAndAuthHelper = new LoginAndAuthHelper(this, this,
+                        AccountUtils.getActiveAccountName(this));
+                mLoginAndAuthHelper.start();
+            }
         }
     }
 
@@ -765,7 +770,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
             performDataBootstrap();
         }
 
-        startLoginProcess();
+        String accountName = AccountUtils.getActiveAccountName(this);
+        if (AccountUtils.hasPlusInfo(this, accountName) || PrefUtils.isGoogleFitEnabled(this))
+            startLoginProcess();
     }
 
     /**

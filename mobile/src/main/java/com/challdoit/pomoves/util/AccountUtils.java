@@ -11,12 +11,10 @@ import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableNotifiedException;
 import com.google.android.gms.common.Scopes;
-import com.challdoit.pomoves.provider.PomovesProvider;
 
 import java.io.IOException;
 import java.util.UUID;
 
-import static com.challdoit.pomoves.util.LogUtils.*;
 import static com.challdoit.pomoves.util.LogUtils.LOGD;
 import static com.challdoit.pomoves.util.LogUtils.LOGE;
 import static com.challdoit.pomoves.util.LogUtils.LOGI;
@@ -45,7 +43,6 @@ public class AccountUtils {
 
     public static final String AUTH_SCOPES[] = {
             Scopes.PLUS_LOGIN,
-            Scopes.DRIVE_APPFOLDER,
             "https://www.googleapis.com/auth/userinfo.email"};
 
     static final String AUTH_TOKEN_TYPE;
@@ -203,7 +200,8 @@ public class AccountUtils {
             String accountName = getActiveAccountName(context);
             if (accountName != null) {
                 LOGI(TAG, "Requesting new auth token (with notification)");
-                final String token = GoogleAuthUtil.getTokenWithNotification(context, accountName, AUTH_TOKEN_TYPE,
+                final String token = GoogleAuthUtil.getTokenWithNotification(context, accountName,
+                        AUTH_TOKEN_TYPE,
                         null, syncAuthority, null);
                 setAuthToken(context, token);
             } else {

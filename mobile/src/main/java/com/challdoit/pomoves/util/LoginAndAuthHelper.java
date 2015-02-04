@@ -20,6 +20,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.plus.People;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
@@ -54,7 +55,7 @@ public class LoginAndAuthHelper implements
     // Auth scopes we need
     public static final String AUTH_SCOPES[] = {
             Scopes.PLUS_LOGIN,
-            "https://www.googleapis.com/auth/plus.profile.emails.read"};
+            "https://www.googleapis.com/auth/userinfo.email"};
 
     static final String AUTH_TOKEN_TYPE;
 
@@ -179,6 +180,12 @@ public class LoginAndAuthHelper implements
             GoogleApiClient.Builder builder = new GoogleApiClient.Builder(activity);
             for (String scope : AUTH_SCOPES) {
                 builder.addScope(new Scope(scope));
+            }
+            if (PrefUtils.isGoogleFitEnabled(mAppContext)) {
+                builder.addApi(Fitness.API);
+                for (String scope : FitUtils.FIT_SCOPES) {
+                    builder.addScope(new Scope(scope));
+                }
             }
             mGoogleApiClient = builder.addApi(Plus.API)
                     .addConnectionCallbacks(this)
@@ -342,7 +349,8 @@ public class LoginAndAuthHelper implements
 
         if (requestCode == REQUEST_AUTHENTICATE ||
                 requestCode == REQUEST_RECOVER_FROM_AUTH_ERROR ||
-                requestCode == REQUEST_PLAY_SERVICES_ERROR_DIALOG) {
+                requestCode == REQUEST_PLAY_SERVICES_ERROR_DIALOG ||
+                requestCode == REQUEST_RECOVER_FROM_PLAY_SERVICES_ERROR) {
 
             LOGD(TAG, "onActivityResult, req=" + requestCode + ", result=" + resultCode);
             if (requestCode == REQUEST_RECOVER_FROM_PLAY_SERVICES_ERROR) {
@@ -434,7 +442,8 @@ public class LoginAndAuthHelper implements
                 }
 
                 LOGD(TAG, "Starting background auth for " + mAccountName);
-                final String token = GoogleAuthUtil.getToken(mAppContext, mAccountName, AUTH_TOKEN_TYPE);
+                final String token = GoogleAuthUtil.getToken(mAppContext, mAccountName,
+                        AUTH_TOKEN_TYPE);
 
                 // Save auth token.
                 LOGD(TAG, "Saving token: " + (token == null ? "(null)" : "(length " +
