@@ -25,6 +25,8 @@ import com.challdoit.pomoves.SessionManager;
 import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.model.Session;
 import com.challdoit.pomoves.provider.PomovesProvider;
+import com.challdoit.pomoves.util.AccountUtils;
+import com.challdoit.pomoves.util.FitUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -74,6 +76,9 @@ public class TimerFragment extends Fragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         getLoaderManager().initLoader(POMODORO_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
+
+        FitUtils fu = new FitUtils(getActivity(), null, AccountUtils.getActiveAccountName(getActivity()));
+        fu.readSession();
     }
 
     @Override
