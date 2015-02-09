@@ -3,6 +3,7 @@ package com.challdoit.pomoves.model;
 import android.content.Context;
 
 import com.challdoit.pomoves.R;
+import com.google.gson.Gson;
 
 import java.util.Date;
 
@@ -13,16 +14,20 @@ public class Event {
     private int mEventType;
     private Date mStartDate;
     private Date mEndDate;
-    private String mData;
+    private Data mData;
+
+    private Gson gson;
 
     public static final int POMODORO = 1;
     public static final int SHORT_BREAK = 2;
     public static final int LONG_BREAK = 3;
 
     public Event() {
+        gson = new Gson();
     }
 
     public Event(long sessionId, int eventType) {
+        this();
         this.mId = -1;
         this.mSessionId = sessionId;
         this.mEventType = eventType;
@@ -70,12 +75,16 @@ public class Event {
         this.mEndDate = endDate;
     }
 
-    public String getData() {
+    public Data getData() {
         return mData;
     }
 
-    public void setData(String data) {
-        mData = data;
+    public void setDataFromJson(String stats) {
+        this.mData = gson.fromJson(stats, Data.class);
+    }
+
+    public String getDataJson() {
+        return gson.toJson(mData, Data.class);
     }
 
     public static String getName(Context context, int eventType) {
@@ -89,5 +98,13 @@ public class Event {
         }
 
         return context.getString(R.string.UNKNOWN);
+    }
+
+    public class Data {
+        String fitSessionId;
+
+        public Data() {
+
+        }
     }
 }

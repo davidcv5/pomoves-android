@@ -33,6 +33,7 @@ public class SessionManager {
     private static final String PREF_CURRENT_SESSION_ID = "SessionManager.currentSessionId";
     private static final String PREF_CURRENT_EVENT_ID = "SessionManager.currentEventId";
     private static final String PREF_CURRENT_EVENT_TYPE = "SessionManager.eventType";
+    private static final String PREF_CURRENT_START_TIME = "SessionManager.currentStartTime";
     private static final String PREF_CURRENT_END_TIME = "SessionManager.currentEndTime";
     private static final String PREF_POMODORO_COUNT = "SessionManager.pomodoroCount";
     public static final String ACTION_EVENT = "com.challdoit.pomoves.ACTION_EVENT";
@@ -46,6 +47,7 @@ public class SessionManager {
     private long mCurrentEventId;
     private int mPomodoroCount;
     private Session mSession;
+    private long mCurrentStartTime;
     private long mCurrentEndTime;
     private FitUtils mFitUtils;
 
@@ -55,6 +57,7 @@ public class SessionManager {
         mCurrentSessionId = mPrefs.getLong(PREF_CURRENT_SESSION_ID, -1);
         mCurrentEventId = mPrefs.getLong(PREF_CURRENT_EVENT_ID, -1);
         mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
+        mCurrentStartTime = mPrefs.getLong(PREF_CURRENT_START_TIME, 0);
         mCurrentEndTime = mPrefs.getLong(PREF_CURRENT_END_TIME, 0);
 
         //populateDebugData(appContext);
@@ -180,6 +183,7 @@ public class SessionManager {
                 duration));
 
         long now = System.currentTimeMillis();
+        setCurrentStartTime(now);
         setCurrentEndTime(now + duration);
 
         PendingIntent timer = getSessionPendingIntent(true);
@@ -196,7 +200,7 @@ public class SessionManager {
         }
 
         if (eventType == Event.SHORT_BREAK || eventType == Event.LONG_BREAK)
-            startRecordingActivity();
+            getFitUtils().startSession(now);
 
         Session session = getCurrentSession();
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
@@ -217,14 +221,6 @@ public class SessionManager {
         return mFitUtils;
     }
 
-    private void startRecordingActivity() {
-        getFitUtils().startSession();
-    }
-
-    private void stopRecordingActivity() {
-        getFitUtils().stopSession();
-    }
-
     public void stopEvent() {
         stopEvent(false);
     }
@@ -235,7 +231,7 @@ public class SessionManager {
         int currentEventType = getCurrentEventType();
 
         if (currentEventType == Event.SHORT_BREAK || currentEventType == Event.LONG_BREAK)
-            stopRecordingActivity();
+            getFitUtils().stopSession(getCurrentStartTime());
 
         Log.d(TAG, String.format("Stopping Event: %s, Count: %s",
                 Event.getName(mAppContext, currentEventType),
@@ -304,8 +300,17 @@ public class SessionManager {
         return mPomodoroCount;
     }
 
+    public long getCurrentStartTime() {
+        return mCurrentStartTime;
+    }
+
     public long getCurrentEndTime() {
         return mCurrentEndTime;
+    }
+
+    public void setCurrentStartTime(long currentStartTime) {
+        mCurrentEndTime = currentStartTime;
+        mPrefs.edit().putLong(PREF_CURRENT_START_TIME, currentStartTime).apply();
     }
 
     public void setCurrentEndTime(long currentEndTime) {

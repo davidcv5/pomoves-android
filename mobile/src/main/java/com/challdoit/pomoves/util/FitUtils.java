@@ -11,21 +11,26 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.FitnessActivities;
 import com.google.android.gms.fitness.FitnessStatusCodes;
+import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.SessionInsertRequest;
 import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.DataReadResult;
+import com.google.android.gms.fitness.result.SessionReadResult;
 import com.google.android.gms.fitness.result.SessionStopResult;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.challdoit.pomoves.util.LogUtils.LOGD;
@@ -41,8 +46,8 @@ public class FitUtils implements
     private static final int ACTION_STOP_SESSION = 1;
     private static final int ACTION_READ_SESSION = 2;
 
+    private static final String SESSION_ID_PREFIX = "com.challdoit.pomoves.";
     private static final String SESSION_NAME = "Pomoves";
-    private static final String SESSION_IDENTIFIER = "com.challdoit.pomoves.break";
     private static final String SESSION_DESCRIPTION = "Pomodoro Session";
 
     private static final String DATE_FORMAT = "yyyy.MM.dd HH:mm:ss";
@@ -52,6 +57,7 @@ public class FitUtils implements
     private Context mContext;
     private GoogleApiClient mClient;
     private int mAction;
+    private String mSessionId;
 
     public static final String FIT_SCOPES[] = {
             "https://www.googleapis.com/auth/fitness.activity.write"};
@@ -79,7 +85,11 @@ public class FitUtils implements
                 .build();
     }
 
-    public void startSession() {
+    public String getSessionIdentifier(){
+        return SESSION_ID_PREFIX + mSessionId;
+    }
+
+    public void startSession(long start) {
         LOGI(TAG, "Starting session");
         if (mClient == null) {
             LOGI(TAG, "Client is null, so creating it");
@@ -90,6 +100,7 @@ public class FitUtils implements
         if (!mClient.isConnected()) {
             LOGI(TAG, "Client is disconnected... setting action to START and connecting");
             mAction = ACTION_START_SESSION;
+            mSessionId
             mClient.connect();
         } else {
             LOGI(TAG, "Client is already connected... starting recording");
@@ -99,7 +110,7 @@ public class FitUtils implements
 
     private void startRecording() {
         LOGI(TAG, "Start recording");
-        Fitness.RecordingApi.subscribe(mClient, DataType.TYPE_ACTIVITY_SAMPLE)
+        Fitness.RecordingApi.subscribe(mClient, DataType.TYPE_STEP_COUNT_DELTA)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
@@ -127,12 +138,12 @@ public class FitUtils implements
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        LOGI(TAG, "Session recording started");
+                        LOGI(TAG, "Session recording started " + status.toString());
                     }
                 });
     }
 
-    public void stopSession() {
+    public void stopSession(long start) {
         LOGI(TAG, "Stopping session");
         if (mClient == null) {
             LOGI(TAG, "Client is null, so creating it");
@@ -156,24 +167,63 @@ public class FitUtils implements
                 .setResultCallback(new ResultCallback<SessionStopResult>() {
                     @Override
                     public void onResult(SessionStopResult sessionStopResult) {
-                        LOGI(TAG, "Session recording stopped");
+                        LOGI(TAG, "Session recording stopped" + sessionStopResult.toString());
                     }
                 });
 
-        Fitness.RecordingApi.unsubscribe(mClient, DataType.TYPE_ACTIVITY_SAMPLE)
+        Fitness.RecordingApi.unsubscribe(mClient, DataType.TYPE_STEP_COUNT_DELTA)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
                         if (status.isSuccess()) {
                             LOGI(TAG, "Successfully unsubscribed for data type: " +
-                                    DataType.TYPE_ACTIVITY_SAMPLE.getName());
+                                    DataType.TYPE_STEP_COUNT_DELTA.getName());
                         } else {
                             // Subscription not removed
                             LOGI(TAG, "Failed to unsubscribe for data type: " +
-                                    DataType.TYPE_ACTIVITY_SAMPLE.getName());
+                                    DataType.TYPE_STEP_COUNT_DELTA.getName());
                         }
                     }
                 });
+    }
+
+    private void saveSession(Session sessionResult) {
+
+        // Create a session with metadata about the activity.
+        Session session = new Session.Builder()
+                .setName(SESSION_NAME)
+                .setDescription(SESSION_DESCRIPTION)
+                .setIdentifier(SESSION_IDENTIFIER)
+                .setActivity(FitnessActivities.WALKING)
+                .setStartTime(sessionResult.getStartTime(TimeUnit.MILLISECONDS),
+                        TimeUnit.MILLISECONDS)
+                .setEndTime(sessionResult.getEndTime(TimeUnit.MILLISECONDS),
+                        TimeUnit.MILLISECONDS)
+                .build();
+
+        // Build a session insert request
+        SessionInsertRequest insertRequest = new SessionInsertRequest.Builder()
+                .setSession(session)
+                .build();
+
+        // Then, invoke the Sessions API to insert the session and await the result,
+        // which is possible here because of the AsyncTask. Always include a timeout when
+        // calling await() to avoid hanging that can occur from the service being shutdown
+        // because of low memory or other conditions.
+        LOGI(TAG, "Inserting the session in the History API");
+        com.google.android.gms.common.api.Status insertStatus =
+                Fitness.SessionsApi.insertSession(mClient, insertRequest)
+                        .await(1, TimeUnit.MINUTES);
+
+        // Before querying the session, check to see if the insertion succeeded.
+        if (!insertStatus.isSuccess()) {
+            LOGI(TAG, "There was a problem inserting the session: " +
+                    insertStatus.getStatusMessage());
+            return;
+        }
+
+        // At this point, the session has been inserted and can be read.
+        LOGI(TAG, "Session insert was successful!");
     }
 
     public void readSession() {
@@ -190,7 +240,7 @@ public class FitUtils implements
             mClient.connect();
         } else {
             LOGI(TAG, "Client is already connected... stopping reading");
-            new ReadSessionTask().execute();
+            new ReadStepsTask().execute();
         }
     }
 
@@ -204,13 +254,13 @@ public class FitUtils implements
         Date now = new Date();
         cal.setTime(now);
         long endTime = cal.getTimeInMillis();
-        cal.add(Calendar.WEEK_OF_YEAR, -1);
+        cal.add(Calendar.HOUR, -2);
         long startTime = cal.getTimeInMillis();
 
         // Build a session read request
         SessionReadRequest readRequest = new SessionReadRequest.Builder()
                 .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .read(DataType.TYPE_STEP_COUNT_CUMULATIVE)
+                .read(DataType.TYPE_STEP_COUNT_DELTA)
                 .setSessionName(SESSION_NAME)
                 .build();
 
@@ -230,7 +280,7 @@ public class FitUtils implements
                 stopRecording();
                 break;
             case ACTION_READ_SESSION:
-                new ReadSessionTask().execute();
+                new ReadStepsTask().execute();
                 break;
         }
     }
@@ -246,7 +296,7 @@ public class FitUtils implements
     }
 
     private void dumpDataSet(DataSet dataSet) {
-        LOGI(TAG, "Data returned for Data type: " + dataSet.getDataType().getName());
+        LOGI(TAG, "Data returned for Data type: " + dataSet.getDataType().getName() + " " + dataSet.toString());
         for (DataPoint dp : dataSet.getDataPoints()) {
             SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
             LOGI(TAG, "Data point:");
@@ -269,19 +319,19 @@ public class FitUtils implements
                 + "\n\tEnd: " + dateFormat.format(session.getEndTime(TimeUnit.MILLISECONDS)));
     }
 
-    private class ReadSessionTask extends AsyncTask<Void, Void, Void> {
+    private class ReadStepsTask extends AsyncTask<Void, Void, Void> {
         protected Void doInBackground(Void... params) {
             // Setting a start and end date using a range of 1 week before this moment.
             Calendar cal = Calendar.getInstance();
             Date now = new Date();
             cal.setTime(now);
             long endTime = cal.getTimeInMillis();
-            cal.add(Calendar.WEEK_OF_YEAR, -1);
+            cal.add(Calendar.HOUR, -2);
             long startTime = cal.getTimeInMillis();
 
             SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-            LOGI(TAG, "Range Start: " + dateFormat.format(startTime));
-            LOGI(TAG, "Range End: " + dateFormat.format(endTime));
+            LOGI(TAG, "Range Start: " + dateFormat.format(startTime) + " -- " + startTime);
+            LOGI(TAG, "Range End: " + dateFormat.format(endTime) + " -- " + endTime);
 
             DataReadRequest readRequest = new DataReadRequest.Builder()
                     // The data request can specify multiple data types to return, effectively
@@ -293,7 +343,7 @@ public class FitUtils implements
                             // Analogous to a "Group By" in SQL, defines how data should be aggregated.
                             // bucketByTime allows for a time span, whereas bucketBySession would allow
                             // bucketing by "sessions", which would need to be defined in code.
-                    .bucketByTime(1, TimeUnit.DAYS)
+                    .bucketBySession(10, TimeUnit.SECONDS)
                     .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                     .build();
 
@@ -301,9 +351,8 @@ public class FitUtils implements
             Fitness.HistoryApi.readData(mClient, readRequest).setResultCallback(new ResultCallback<DataReadResult>() {
                 @Override
                 public void onResult(DataReadResult dataReadResult) {
-                    LOGI(TAG, "Datasets loaded");
-                    for (DataSet dataSet : dataReadResult.getDataSets())
-                        dumpDataSet(dataSet);
+                    LOGI(TAG, "DataReadResult: " + dataReadResult.toString());
+                    printData(dataReadResult);
 
                 }
             });
@@ -311,4 +360,72 @@ public class FitUtils implements
             return null;
         }
     }
+
+    private class ReadSessionTask extends AsyncTask<Void, Void, Void> {
+        protected Void doInBackground(Void... params) {
+            // Setting a start and end date using a range of 1 week before this moment.
+            Calendar cal = Calendar.getInstance();
+            Date now = new Date();
+            cal.setTime(now);
+            long endTime = cal.getTimeInMillis();
+            cal.add(Calendar.HOUR, -2);
+            long startTime = cal.getTimeInMillis();
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+            LOGI(TAG, "Range Start: " + dateFormat.format(startTime) + " -- " + startTime);
+            LOGI(TAG, "Range End: " + dateFormat.format(endTime) + " -- " + endTime);
+
+            SessionReadRequest sessionReadRequest = buildSessionReadRequest();
+
+            Fitness.SessionsApi.readSession(mClient, sessionReadRequest)
+                    .setResultCallback(new ResultCallback<SessionReadResult>() {
+                        @Override
+                        public void onResult(SessionReadResult sessionReadResult) {
+                            // Get a list of the sessions that match the criteria to check the result.
+                            LOGI(TAG, "Session read was successful. Number of returned sessions is: "
+                                    + sessionReadResult.getSessions().size());
+                            for (Session session : sessionReadResult.getSessions()) {
+                                // Process the session
+                                dumpSession(session);
+
+                                // Process the data sets for this session
+                                List<DataSet> dataSets = sessionReadResult.getDataSet(session);
+                                for (DataSet dataSet : dataSets) {
+                                    dumpDataSet(dataSet);
+                                }
+                            }
+                        }
+                    });
+
+            return null;
+        }
+    }
+
+
+    private void printData(DataReadResult dataReadResult) {
+        // [START parse_read_data_result]
+        // If the DataReadRequest object specified aggregated data, dataReadResult will be returned
+        // as buckets containing DataSets, instead of just DataSets.
+        if (dataReadResult.getBuckets().size() > 0) {
+            LOGI(TAG, "Number of returned buckets of DataSets is: "
+                    + dataReadResult.getBuckets().size());
+            for (Bucket bucket : dataReadResult.getBuckets()) {
+                List<DataSet> dataSets = bucket.getDataSets();
+                LOGI(TAG, "Number of returned DataSets is: "
+                        + dataSets.size());
+                for (DataSet dataSet : dataSets) {
+                    dumpDataSet(dataSet);
+                }
+            }
+        } else if (dataReadResult.getDataSets().size() > 0) {
+            LOGI(TAG, "Number of returned DataSets is: "
+                    + dataReadResult.getDataSets().size());
+            for (DataSet dataSet : dataReadResult.getDataSets()) {
+                dumpDataSet(dataSet);
+            }
+        }
+        // [END parse_read_data_result]
+    }
+
+
 }

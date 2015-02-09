@@ -279,6 +279,8 @@ public class PomovesProvider extends ContentProvider {
                     getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_START_TEXT))));
             event.setEndDate(PomovesContract.getDateTimeFromDb(
                     getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_END_TEXT))));
+            event.setDataFromJson(
+                    getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_DATA)));
 
             return event;
         }
