@@ -55,14 +55,20 @@ public class SessionManager {
         mAppContext = appContext;
         mPrefs = mAppContext.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
         mCurrentSessionId = mPrefs.getLong(PREF_CURRENT_SESSION_ID, -1);
-        mCurrentEventId = mPrefs.getLong(PREF_CURRENT_EVENT_ID, -1);
-        mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
-        mCurrentStartTime = mPrefs.getLong(PREF_CURRENT_START_TIME, 0);
-        mCurrentEndTime = mPrefs.getLong(PREF_CURRENT_END_TIME, 0);
 
-        //populateDebugData(appContext);
+        long existingSessionId = mCurrentSessionId;
 
         mSession = getCurrentSession();
+
+        if (existingSessionId == mSession.getId()) {
+
+            mCurrentEventId = mPrefs.getLong(PREF_CURRENT_EVENT_ID, -1);
+            mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
+            mCurrentStartTime = mPrefs.getLong(PREF_CURRENT_START_TIME, 0);
+            mCurrentEndTime = mPrefs.getLong(PREF_CURRENT_END_TIME, 0);
+        }
+
+        //populateDebugData(appContext);
     }
 
     public void clearSession() {
@@ -309,7 +315,7 @@ public class SessionManager {
     }
 
     public void setCurrentStartTime(long currentStartTime) {
-        mCurrentEndTime = currentStartTime;
+        mCurrentStartTime = currentStartTime;
         mPrefs.edit().putLong(PREF_CURRENT_START_TIME, currentStartTime).apply();
     }
 

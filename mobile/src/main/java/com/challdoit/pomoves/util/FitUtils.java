@@ -57,7 +57,7 @@ public class FitUtils implements
     private Context mContext;
     private GoogleApiClient mClient;
     private int mAction;
-    private String mSessionId;
+    private long mSessionId;
 
     public static final String FIT_SCOPES[] = {
             "https://www.googleapis.com/auth/fitness.activity.write"};
@@ -85,22 +85,22 @@ public class FitUtils implements
                 .build();
     }
 
-    public String getSessionIdentifier(){
+    public String getSessionIdentifier() {
         return SESSION_ID_PREFIX + mSessionId;
     }
 
-    public void startSession(long start) {
+    public void startSession(long starTime) {
         LOGI(TAG, "Starting session");
         if (mClient == null) {
             LOGI(TAG, "Client is null, so creating it");
             buildFitnessClient();
         }
 
+        mSessionId = starTime;
 
         if (!mClient.isConnected()) {
             LOGI(TAG, "Client is disconnected... setting action to START and connecting");
             mAction = ACTION_START_SESSION;
-            mSessionId
             mClient.connect();
         } else {
             LOGI(TAG, "Client is already connected... starting recording");
@@ -129,7 +129,7 @@ public class FitUtils implements
 
         Session session = new Session.Builder()
                 .setName(SESSION_NAME)
-                .setIdentifier(SESSION_IDENTIFIER)
+                .setIdentifier(getSessionIdentifier())
                 .setDescription(SESSION_DESCRIPTION)
                 .setStartTime(new Date().getTime(), TimeUnit.MILLISECONDS)
                 .build();
@@ -143,13 +143,14 @@ public class FitUtils implements
                 });
     }
 
-    public void stopSession(long start) {
+    public void stopSession(long startTime) {
         LOGI(TAG, "Stopping session");
         if (mClient == null) {
             LOGI(TAG, "Client is null, so creating it");
             buildFitnessClient();
         }
 
+        mSessionId = startTime;
 
         if (!mClient.isConnected()) {
             LOGI(TAG, "Client is disconnected... setting action to STOP and connecting");
@@ -163,7 +164,7 @@ public class FitUtils implements
 
     private void stopRecording() {
         LOGI(TAG, "Stop recording");
-        Fitness.SessionsApi.stopSession(mClient, SESSION_IDENTIFIER)
+        Fitness.SessionsApi.stopSession(mClient, getSessionIdentifier())
                 .setResultCallback(new ResultCallback<SessionStopResult>() {
                     @Override
                     public void onResult(SessionStopResult sessionStopResult) {
@@ -193,7 +194,7 @@ public class FitUtils implements
         Session session = new Session.Builder()
                 .setName(SESSION_NAME)
                 .setDescription(SESSION_DESCRIPTION)
-                .setIdentifier(SESSION_IDENTIFIER)
+                .setIdentifier(getSessionIdentifier())
                 .setActivity(FitnessActivities.WALKING)
                 .setStartTime(sessionResult.getStartTime(TimeUnit.MILLISECONDS),
                         TimeUnit.MILLISECONDS)
