@@ -16,6 +16,7 @@ import com.google.android.gms.fitness.FitnessStatusCodes;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
@@ -104,11 +105,11 @@ public class FitUtils implements
             mClient.connect();
         } else {
             LOGI(TAG, "Client is already connected... starting recording");
-            startRecording();
+            startRecording(getSessionIdentifier());
         }
     }
 
-    private void startRecording() {
+    private void startRecording(String sessionIdentifier) {
         LOGI(TAG, "Start recording");
         Fitness.RecordingApi.subscribe(mClient, DataType.TYPE_STEP_COUNT_DELTA)
                 .setResultCallback(new ResultCallback<Status>() {
@@ -129,7 +130,7 @@ public class FitUtils implements
 
         Session session = new Session.Builder()
                 .setName(SESSION_NAME)
-                .setIdentifier(getSessionIdentifier())
+                .setIdentifier(sessionIdentifier)
                 .setDescription(SESSION_DESCRIPTION)
                 .setStartTime(new Date().getTime(), TimeUnit.MILLISECONDS)
                 .build();
@@ -158,16 +159,18 @@ public class FitUtils implements
             mClient.connect();
         } else {
             LOGI(TAG, "Client is already connected... stopping recording");
-            stopRecording();
+            stopRecording(getSessionIdentifier());
         }
     }
 
-    private void stopRecording() {
+    private void stopRecording(String sessionIdentifier) {
         LOGI(TAG, "Stop recording");
-        Fitness.SessionsApi.stopSession(mClient, getSessionIdentifier())
+        Fitness.SessionsApi.stopSession(mClient, sessionIdentifier)
                 .setResultCallback(new ResultCallback<SessionStopResult>() {
                     @Override
                     public void onResult(SessionStopResult sessionStopResult) {
+                        if (sessionStopResult.getSessions().size() > 0)
+                            new SaveSessionTask(sessionStopResult.getSessions().get(0)).execute();
                         LOGI(TAG, "Session recording stopped" + sessionStopResult.toString());
                     }
                 });
@@ -188,45 +191,6 @@ public class FitUtils implements
                 });
     }
 
-    private void saveSession(Session sessionResult) {
-
-        // Create a session with metadata about the activity.
-        Session session = new Session.Builder()
-                .setName(SESSION_NAME)
-                .setDescription(SESSION_DESCRIPTION)
-                .setIdentifier(getSessionIdentifier())
-                .setActivity(FitnessActivities.WALKING)
-                .setStartTime(sessionResult.getStartTime(TimeUnit.MILLISECONDS),
-                        TimeUnit.MILLISECONDS)
-                .setEndTime(sessionResult.getEndTime(TimeUnit.MILLISECONDS),
-                        TimeUnit.MILLISECONDS)
-                .build();
-
-        // Build a session insert request
-        SessionInsertRequest insertRequest = new SessionInsertRequest.Builder()
-                .setSession(session)
-                .build();
-
-        // Then, invoke the Sessions API to insert the session and await the result,
-        // which is possible here because of the AsyncTask. Always include a timeout when
-        // calling await() to avoid hanging that can occur from the service being shutdown
-        // because of low memory or other conditions.
-        LOGI(TAG, "Inserting the session in the History API");
-        com.google.android.gms.common.api.Status insertStatus =
-                Fitness.SessionsApi.insertSession(mClient, insertRequest)
-                        .await(1, TimeUnit.MINUTES);
-
-        // Before querying the session, check to see if the insertion succeeded.
-        if (!insertStatus.isSuccess()) {
-            LOGI(TAG, "There was a problem inserting the session: " +
-                    insertStatus.getStatusMessage());
-            return;
-        }
-
-        // At this point, the session has been inserted and can be read.
-        LOGI(TAG, "Session insert was successful!");
-    }
-
     public void readSession() {
         LOGI(TAG, "Reading session");
         if (mClient == null) {
@@ -241,31 +205,8 @@ public class FitUtils implements
             mClient.connect();
         } else {
             LOGI(TAG, "Client is already connected... stopping reading");
-            new ReadStepsTask().execute();
+            new ReadSessionTask().execute();
         }
-    }
-
-    /**
-     * Return a {@link SessionReadRequest} for all speed data in the past week.
-     */
-    private SessionReadRequest buildSessionReadRequest() {
-        LOGI(TAG, "Reading History API results for session: " + SESSION_NAME);
-        // Set a start and end time for our query, using a start time of 1 week before this moment.
-        Calendar cal = Calendar.getInstance();
-        Date now = new Date();
-        cal.setTime(now);
-        long endTime = cal.getTimeInMillis();
-        cal.add(Calendar.HOUR, -2);
-        long startTime = cal.getTimeInMillis();
-
-        // Build a session read request
-        SessionReadRequest readRequest = new SessionReadRequest.Builder()
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .read(DataType.TYPE_STEP_COUNT_DELTA)
-                .setSessionName(SESSION_NAME)
-                .build();
-
-        return readRequest;
     }
 
     @Override
@@ -275,13 +216,13 @@ public class FitUtils implements
 
         switch (mAction) {
             case ACTION_START_SESSION:
-                startRecording();
+                startRecording(getSessionIdentifier());
                 break;
             case ACTION_STOP_SESSION:
-                stopRecording();
+                stopRecording(getSessionIdentifier());
                 break;
             case ACTION_READ_SESSION:
-                new ReadStepsTask().execute();
+                new ReadSessionTask().execute();
                 break;
         }
     }
@@ -296,28 +237,19 @@ public class FitUtils implements
         LOGD(TAG, "onConnectionFailed. " + connectionResult.toString());
     }
 
-    private void dumpDataSet(DataSet dataSet) {
-        LOGI(TAG, "Data returned for Data type: " + dataSet.getDataType().getName() + " " + dataSet.toString());
-        for (DataPoint dp : dataSet.getDataPoints()) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-            LOGI(TAG, "Data point:");
-            LOGI(TAG, "\tType: " + dp.getDataType().getName());
-            LOGI(TAG, "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
-            LOGI(TAG, "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)));
-            for (Field field : dp.getDataType().getFields()) {
-                LOGI(TAG, "\tField: " + field.getName() +
-                        " Value: " + dp.getValue(field));
-            }
-        }
-    }
+    /**
+     * Return a {@link SessionReadRequest} for all speed data in the past week.
+     */
+    private SessionReadRequest buildSessionReadRequest(
+            String sessionId, long startTime, long endTime) {
+        LOGI(TAG, "Reading History API results for session: " + sessionId);
 
-    private void dumpSession(Session session) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-        LOGI(TAG, "Data returned for Session: " + session.getName()
-                + "\n\tDescription: " + session.getDescription()
-                + "\n\tData: " + session.toString()
-                + "\n\tStart: " + dateFormat.format(session.getStartTime(TimeUnit.MILLISECONDS))
-                + "\n\tEnd: " + dateFormat.format(session.getEndTime(TimeUnit.MILLISECONDS)));
+        // Build a session read request
+        return new SessionReadRequest.Builder()
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .read(DataType.TYPE_STEP_COUNT_DELTA)
+                .setSessionName(SESSION_NAME)
+                .build();
     }
 
     private class ReadStepsTask extends AsyncTask<Void, Void, Void> {
@@ -363,45 +295,171 @@ public class FitUtils implements
     }
 
     private class ReadSessionTask extends AsyncTask<Void, Void, Void> {
-        protected Void doInBackground(Void... params) {
-            // Setting a start and end date using a range of 1 week before this moment.
+
+        private long startTime;
+        private long endTime;
+
+        private ReadSessionTask() {
+            // Setting a start and end date using a range of 2 hours before this moment.
             Calendar cal = Calendar.getInstance();
             Date now = new Date();
             cal.setTime(now);
-            long endTime = cal.getTimeInMillis();
-            cal.add(Calendar.HOUR, -2);
-            long startTime = cal.getTimeInMillis();
+            endTime = cal.getTimeInMillis();
+            cal.add(Calendar.WEEK_OF_MONTH, -5);
+            startTime = cal.getTimeInMillis();
+        }
+
+        private ReadSessionTask(Session session) {
+            startTime = session.getStartTime(TimeUnit.MILLISECONDS);
+            endTime = session.getEndTime(TimeUnit.MILLISECONDS);
+        }
+
+        protected Void doInBackground(Void... params) {
 
             SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
             LOGI(TAG, "Range Start: " + dateFormat.format(startTime) + " -- " + startTime);
             LOGI(TAG, "Range End: " + dateFormat.format(endTime) + " -- " + endTime);
 
-            SessionReadRequest sessionReadRequest = buildSessionReadRequest();
+            SessionReadRequest sessionReadRequest =
+                    buildSessionReadRequest(getSessionIdentifier(), startTime, endTime);
 
-            Fitness.SessionsApi.readSession(mClient, sessionReadRequest)
-                    .setResultCallback(new ResultCallback<SessionReadResult>() {
-                        @Override
-                        public void onResult(SessionReadResult sessionReadResult) {
-                            // Get a list of the sessions that match the criteria to check the result.
-                            LOGI(TAG, "Session read was successful. Number of returned sessions is: "
-                                    + sessionReadResult.getSessions().size());
-                            for (Session session : sessionReadResult.getSessions()) {
-                                // Process the session
-                                dumpSession(session);
+            SessionReadResult sessionReadResult =
+                    Fitness.SessionsApi.readSession(mClient, sessionReadRequest)
+                            .await(1, TimeUnit.MINUTES);
 
-                                // Process the data sets for this session
-                                List<DataSet> dataSets = sessionReadResult.getDataSet(session);
-                                for (DataSet dataSet : dataSets) {
-                                    dumpDataSet(dataSet);
-                                }
-                            }
-                        }
-                    });
+            // Get a list of the sessions that match the criteria to check the result.
+            LOGI(TAG, "Session read was successful. Number of returned sessions is: "
+                    + sessionReadResult.getSessions().size());
+            for (Session session : sessionReadResult.getSessions()) {
+                // Process the session
+                dumpSession(session);
+
+                // Process the data sets for this session
+                List<DataSet> dataSets = sessionReadResult.getDataSet(session);
+                for (DataSet dataSet : dataSets) {
+                    dumpDataSet(dataSet);
+                }
+            }
 
             return null;
         }
     }
 
+    private class SaveSessionTask extends AsyncTask<Void, Void, Void> {
+
+        private Session mSession;
+
+        public SaveSessionTask(Session session) {
+            mSession = session;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            DataSource stepsDataSource = new DataSource.Builder()
+                    .setAppPackageName(mContext.getPackageName())
+                    .setDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
+                    .setName(SESSION_NAME + "- activity")
+                    .setType(DataSource.TYPE_DERIVED)
+                    .build();
+
+            DataSet stepsDataSet = DataSet.create(stepsDataSource);
+
+            SessionReadRequest sessionReadRequest = buildSessionReadRequest(
+                    mSession.getIdentifier(),
+                    mSession.getStartTime(TimeUnit.MILLISECONDS),
+                    mSession.getEndTime(TimeUnit.MILLISECONDS));
+
+            SessionReadResult sessionReadResult = Fitness.SessionsApi.readSession(mClient, sessionReadRequest)
+                    .await(1, TimeUnit.MINUTES);
+
+            if (sessionReadResult.getSessions().size() > 0) {
+                int steps = 0;
+                Session sessionResult = sessionReadResult.getSessions().get(0);
+                List<DataSet> dataSets = sessionReadResult.getDataSet(sessionResult);
+                for (DataSet dataSet : dataSets) {
+                    for (DataPoint dp : dataSet.getDataPoints()) {
+                        if (dp.getDataType() == DataType.TYPE_STEP_COUNT_DELTA)
+                            steps += dp.getValue(Field.FIELD_STEPS).asInt();
+                    }
+                }
+
+                DataPoint stepsDp = stepsDataSet.createDataPoint()
+                        .setTimeInterval(
+                                mSession.getStartTime(TimeUnit.MILLISECONDS),
+                                mSession.getEndTime(TimeUnit.MILLISECONDS),
+                                TimeUnit.MILLISECONDS);
+                stepsDp.getValue(Field.FIELD_STEPS).setInt(steps);
+                stepsDataSet.add(stepsDp);
+            }
+
+
+            // Create a session with metadata about the activity.
+            Session session = new Session.Builder()
+                    .setName(SESSION_NAME)
+                    .setDescription(SESSION_DESCRIPTION)
+                    .setIdentifier(getSessionIdentifier())
+                    .setActivity(FitnessActivities.WALKING)
+                    .setStartTime(mSession.getStartTime(TimeUnit.MILLISECONDS),
+                            TimeUnit.MILLISECONDS)
+                    .setEndTime(mSession.getEndTime(TimeUnit.MILLISECONDS),
+                            TimeUnit.MILLISECONDS)
+                    .build();
+
+            // Build a session insert request
+            SessionInsertRequest insertRequest = new SessionInsertRequest.Builder()
+                    .setSession(session)
+                    .addDataSet(stepsDataSet)
+                    .build();
+
+            // Then, invoke the Sessions API to insert the session and await the result,
+            // which is possible here because of the AsyncTask. Always include a timeout when
+            // calling await() to avoid hanging that can occur from the service being shutdown
+            // because of low memory or other conditions.
+            LOGI(TAG, "Inserting the session in the History API");
+
+            com.google.android.gms.common.api.Status insertStatus =
+                    Fitness.SessionsApi.insertSession(mClient, insertRequest)
+                            .await(1, TimeUnit.MINUTES);
+
+            // Before querying the session, check to see if the insertion succeeded.
+            if (!insertStatus.isSuccess())
+
+            {
+                LOGI(TAG, "There was a problem inserting the session: " +
+                        insertStatus.getStatusMessage());
+                return null;
+            }
+
+            // At this point, the session has been inserted and can be read.
+            LOGI(TAG, "Session insert was successful!");
+            return null;
+        }
+    }
+
+    private void dumpDataSet(DataSet dataSet) {
+        LOGI(TAG, "Data returned for Data type: " + dataSet.getDataType().getName() + " " + dataSet.toString());
+        for (DataPoint dp : dataSet.getDataPoints()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+            LOGI(TAG, "Data point:");
+            LOGI(TAG, "\tType: " + dp.getDataType().getName());
+            LOGI(TAG, "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+            LOGI(TAG, "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)));
+            for (Field field : dp.getDataType().getFields()) {
+                LOGI(TAG, "\tField: " + field.getName() +
+                        " Value: " + dp.getValue(field));
+            }
+        }
+    }
+
+    private void dumpSession(Session session) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+        LOGI(TAG, "Data returned for Session: " + session.getName()
+                + "\n\tDescription: " + session.getDescription()
+                + "\n\tData: " + session.toString()
+                + "\n\tStart: " + dateFormat.format(session.getStartTime(TimeUnit.MILLISECONDS))
+                + "\n\tEnd: " + dateFormat.format(session.getEndTime(TimeUnit.MILLISECONDS)));
+    }
 
     private void printData(DataReadResult dataReadResult) {
         // [START parse_read_data_result]
