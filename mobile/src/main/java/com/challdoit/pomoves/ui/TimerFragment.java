@@ -77,7 +77,7 @@ public class TimerFragment extends Fragment
         getLoaderManager().initLoader(POMODORO_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
 
-        FitUtils fu = new FitUtils(getActivity(), null, AccountUtils.getActiveAccountName(getActivity()));
+        FitUtils fu = new FitUtils(getActivity(), AccountUtils.getActiveAccountName(getActivity()));
         fu.readSession();
     }
 
@@ -146,7 +146,7 @@ public class TimerFragment extends Fragment
         if (timeRemaining <= 0)
             return "00:00";
         long minutes = TimeUnit.MILLISECONDS.toMinutes(timeRemaining);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeRemaining - minutes * 60);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeRemaining) - minutes * 60;
 
         return String.format("%02d:%02d", minutes, seconds);
     }

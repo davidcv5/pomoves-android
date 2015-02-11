@@ -44,7 +44,8 @@
 
         <provider
             android:name=".provider.PomovesProvider"
-            android:authorities="com.challdoit.pomoves"/>
+            android:authorities="com.challdoit.pomoves"
+            android:exported="true"/>
 
         <receiver android:name=".PomovesReceiver">
             <intent-filter>

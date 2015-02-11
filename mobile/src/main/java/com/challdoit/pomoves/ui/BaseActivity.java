@@ -770,9 +770,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
             performDataBootstrap();
         }
 
-        String accountName = AccountUtils.getActiveAccountName(this);
-        if (AccountUtils.hasPlusInfo(this, accountName) || PrefUtils.isGoogleFitEnabled(this))
-            startLoginProcess();
+        startLoginProcess();
     }
 
     /**
@@ -857,6 +855,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
         String accountName = AccountUtils.getActiveAccountName(this);
         LOGD(TAG, "Chosen account: " + AccountUtils.getActiveAccountName(this));
+
+        if (!AccountUtils.hasPlusInfo(this, accountName) && !PrefUtils.isGoogleFitEnabled(this))
+            return;
 
         if (mLoginAndAuthHelper != null && mLoginAndAuthHelper.getAccountName().equals(accountName)) {
             LOGD(TAG, "Helper already set up; simply starting it.");

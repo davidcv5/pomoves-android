@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.os.Build;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.format.DateUtils;
-import android.util.Log;
 
 import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.model.Event;
@@ -23,6 +22,8 @@ import com.challdoit.pomoves.util.PrefUtils;
 import java.util.Calendar;
 import java.util.Date;
 
+import static com.challdoit.pomoves.util.LogUtils.LOGI;
+
 public class SessionManager {
 
     private static final String TAG = SessionManager.class.getSimpleName();
@@ -33,12 +34,12 @@ public class SessionManager {
     private static final String PREF_CURRENT_SESSION_ID = "SessionManager.currentSessionId";
     private static final String PREF_CURRENT_EVENT_ID = "SessionManager.currentEventId";
     private static final String PREF_CURRENT_EVENT_TYPE = "SessionManager.eventType";
-    private static final String PREF_CURRENT_START_TIME = "SessionManager.currentStartTime";
     private static final String PREF_CURRENT_END_TIME = "SessionManager.currentEndTime";
     private static final String PREF_POMODORO_COUNT = "SessionManager.pomodoroCount";
     public static final String ACTION_EVENT = "com.challdoit.pomoves.ACTION_EVENT";
     public static final String ACTION_STOP = "com.challdoit.pomoves.ACTION_STOP";
     public static final String ACTION_NEXT = "com.challdoit.pomoves.ACTION_NEXT";
+    private static final String PREF_CURRENT_STEPS = "SessionManager.currentSteps";
 
     private static SessionManager sSessionManager;
     private Context mAppContext;
@@ -47,9 +48,9 @@ public class SessionManager {
     private long mCurrentEventId;
     private int mPomodoroCount;
     private Session mSession;
-    private long mCurrentStartTime;
     private long mCurrentEndTime;
     private FitUtils mFitUtils;
+    private int mCurrentSteps;
 
     private SessionManager(Context appContext) {
         mAppContext = appContext;
@@ -64,8 +65,8 @@ public class SessionManager {
 
             mCurrentEventId = mPrefs.getLong(PREF_CURRENT_EVENT_ID, -1);
             mPomodoroCount = mPrefs.getInt(PREF_POMODORO_COUNT, 0);
-            mCurrentStartTime = mPrefs.getLong(PREF_CURRENT_START_TIME, 0);
             mCurrentEndTime = mPrefs.getLong(PREF_CURRENT_END_TIME, 0);
+            mCurrentSteps = mPrefs.getInt(PREF_CURRENT_STEPS, 0);
         }
 
         //populateDebugData(appContext);
@@ -184,12 +185,11 @@ public class SessionManager {
     public void startEvent(int eventType) {
         int duration = getEventDuration(eventType) * SECOND;
 
-        Log.d(TAG, String.format("Starting Event: %s, Duration: %s",
+        LOGI(TAG, String.format("Starting Event: %s, Duration: %s",
                 Event.getName(mAppContext, eventType),
                 duration));
 
         long now = System.currentTimeMillis();
-        setCurrentStartTime(now);
         setCurrentEndTime(now + duration);
 
         PendingIntent timer = getSessionPendingIntent(true);
@@ -205,9 +205,6 @@ public class SessionManager {
                     timer);
         }
 
-        if (eventType == Event.SHORT_BREAK || eventType == Event.LONG_BREAK)
-            getFitUtils().startSession(now);
-
         Session session = getCurrentSession();
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
         Event event = new Event(session.getId(), eventType);
@@ -215,14 +212,17 @@ public class SessionManager {
         event.setEndDate(new Date(mCurrentEndTime));
         EventHelper.insert(mAppContext, event);
         mCurrentEventId = event.getId();
-        Log.d(TAG, "Current Event Type: " + Event.getName(mAppContext, getCurrentEventType()));
+        LOGI(TAG, "Current Event Type: " + Event.getName(mAppContext, getCurrentEventType()));
+
+        if (eventType == Event.SHORT_BREAK || eventType == Event.LONG_BREAK)
+            getFitUtils().startSession(mCurrentEventId);
 
         notifyChange();
     }
 
     private FitUtils getFitUtils() {
         if (mFitUtils == null)
-            mFitUtils = new FitUtils(mAppContext, null,
+            mFitUtils = new FitUtils(mAppContext,
                     AccountUtils.getActiveAccountName(mAppContext));
         return mFitUtils;
     }
@@ -236,10 +236,17 @@ public class SessionManager {
 
         int currentEventType = getCurrentEventType();
 
-        if (currentEventType == Event.SHORT_BREAK || currentEventType == Event.LONG_BREAK)
-            getFitUtils().stopSession(getCurrentStartTime());
+        if (currentEventType == Event.SHORT_BREAK || currentEventType == Event.LONG_BREAK) {
+            getFitUtils().stopSession(mCurrentEventId);
+            LOGI(TAG, "Stop event - loading: " + mCurrentEventId);
+            Event event = EventHelper.load(mAppContext, mCurrentEventId);
+            event.getData().steps = mCurrentSteps;
+            EventHelper.update(mAppContext, event);
+            getFitUtils().saveSession(event);
+            resetSteps();
+        }
 
-        Log.d(TAG, String.format("Stopping Event: %s, Count: %s",
+        LOGI(TAG, String.format("Stopping Event: %s, Count: %s",
                 Event.getName(mAppContext, currentEventType),
                 mPomodoroCount));
         if (stoppedManually) {
@@ -306,21 +313,28 @@ public class SessionManager {
         return mPomodoroCount;
     }
 
-    public long getCurrentStartTime() {
-        return mCurrentStartTime;
-    }
-
     public long getCurrentEndTime() {
         return mCurrentEndTime;
-    }
-
-    public void setCurrentStartTime(long currentStartTime) {
-        mCurrentStartTime = currentStartTime;
-        mPrefs.edit().putLong(PREF_CURRENT_START_TIME, currentStartTime).apply();
     }
 
     public void setCurrentEndTime(long currentEndTime) {
         mCurrentEndTime = currentEndTime;
         mPrefs.edit().putLong(PREF_CURRENT_END_TIME, currentEndTime).apply();
+    }
+
+    public void resetSteps() {
+        addCurrentSteps(-mCurrentSteps);
+    }
+
+    public void addCurrentSteps(int steps) {
+        mCurrentSteps += steps;
+        mPrefs.edit().putInt(PREF_CURRENT_STEPS, mCurrentSteps).apply();
+    }
+
+    public void updateSteps(int steps) {
+        LOGI(TAG, "Updating session - steps: " + steps);
+        mSession.getStats().stepCount += steps;
+        SessionHelper.update(mAppContext, mSession);
+        addCurrentSteps(steps);
     }
 }

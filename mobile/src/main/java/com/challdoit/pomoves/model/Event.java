@@ -101,7 +101,7 @@ public class Event {
     }
 
     public class Data {
-        String fitSessionId;
+        public int steps;
 
         public Data() {
 

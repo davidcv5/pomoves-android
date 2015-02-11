@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import com.challdoit.pomoves.SessionManager;
+import com.challdoit.pomoves.model.Event;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -12,7 +14,6 @@ import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessActivities;
-import com.google.android.gms.fitness.FitnessStatusCodes;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
@@ -21,13 +22,13 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.OnDataPointListener;
+import com.google.android.gms.fitness.request.SensorRequest;
 import com.google.android.gms.fitness.request.SessionInsertRequest;
 import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.fitness.result.SessionReadResult;
-import com.google.android.gms.fitness.result.SessionStopResult;
 
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,7 +55,6 @@ public class FitUtils implements
     private static final String DATE_FORMAT = "yyyy.MM.dd HH:mm:ss";
 
     private String mAccountName;
-    private WeakReference<Callbacks> mCallbacksRef;
     private Context mContext;
     private GoogleApiClient mClient;
     private int mAction;
@@ -62,16 +62,10 @@ public class FitUtils implements
 
     public static final String FIT_SCOPES[] = {
             "https://www.googleapis.com/auth/fitness.activity.write"};
+    private OnDataPointListener mListener;
 
-    public interface Callbacks {
-        void onSessionStarted(String accountName);
-
-        void onSessionStopped(String accountName);
-    }
-
-    public FitUtils(Context context, Callbacks callbacks, String accountName) {
+    public FitUtils(Context context, String accountName) {
         LOGD(TAG, "Helper created. Account: " + accountName);
-        mCallbacksRef = new WeakReference<>(callbacks);
         mContext = context;
         mAccountName = accountName;
     }
@@ -87,108 +81,49 @@ public class FitUtils implements
     }
 
     public String getSessionIdentifier() {
-        return SESSION_ID_PREFIX + mSessionId;
+        return getSessionIdentifier(mSessionId);
     }
 
-    public void startSession(long starTime) {
+    public String getSessionIdentifier(long id) {
+        return SESSION_ID_PREFIX + id;
+    }
+
+    public void startSession(long eventId) {
         LOGI(TAG, "Starting session");
         if (mClient == null) {
             LOGI(TAG, "Client is null, so creating it");
             buildFitnessClient();
         }
 
-        mSessionId = starTime;
+        mSessionId = eventId;
 
         if (!mClient.isConnected()) {
             LOGI(TAG, "Client is disconnected... setting action to START and connecting");
             mAction = ACTION_START_SESSION;
             mClient.connect();
         } else {
-            LOGI(TAG, "Client is already connected... starting recording");
-            startRecording(getSessionIdentifier());
+            LOGI(TAG, "Client is already connected... starting sensors");
+            startSensors();
         }
     }
 
-    private void startRecording(String sessionIdentifier) {
-        LOGI(TAG, "Start recording");
-        Fitness.RecordingApi.subscribe(mClient, DataType.TYPE_STEP_COUNT_DELTA)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        if (status.isSuccess()) {
-                            if (status.getStatusCode()
-                                    == FitnessStatusCodes.SUCCESS_ALREADY_SUBSCRIBED) {
-                                LOGI(TAG, "Existing subscription for activity detected.");
-                            } else {
-                                LOGI(TAG, "Successfully subscribed!");
-                            }
-                        } else {
-                            LOGI(TAG, "There was a problem subscribing.");
-                        }
-                    }
-                });
-
-        Session session = new Session.Builder()
-                .setName(SESSION_NAME)
-                .setIdentifier(sessionIdentifier)
-                .setDescription(SESSION_DESCRIPTION)
-                .setStartTime(new Date().getTime(), TimeUnit.MILLISECONDS)
-                .build();
-
-        Fitness.SessionsApi.startSession(mClient, session)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        LOGI(TAG, "Session recording started " + status.toString());
-                    }
-                });
-    }
-
-    public void stopSession(long startTime) {
+    public void stopSession(long eventId) {
         LOGI(TAG, "Stopping session");
         if (mClient == null) {
             LOGI(TAG, "Client is null, so creating it");
             buildFitnessClient();
         }
 
-        mSessionId = startTime;
+        mSessionId = eventId;
 
         if (!mClient.isConnected()) {
             LOGI(TAG, "Client is disconnected... setting action to STOP and connecting");
             mAction = ACTION_STOP_SESSION;
             mClient.connect();
         } else {
-            LOGI(TAG, "Client is already connected... stopping recording");
-            stopRecording(getSessionIdentifier());
+            LOGI(TAG, "Client is already connected... stopping sensors");
+            stopSensors();
         }
-    }
-
-    private void stopRecording(String sessionIdentifier) {
-        LOGI(TAG, "Stop recording");
-        Fitness.SessionsApi.stopSession(mClient, sessionIdentifier)
-                .setResultCallback(new ResultCallback<SessionStopResult>() {
-                    @Override
-                    public void onResult(SessionStopResult sessionStopResult) {
-                        if (sessionStopResult.getSessions().size() > 0)
-                            new SaveSessionTask(sessionStopResult.getSessions().get(0)).execute();
-                        LOGI(TAG, "Session recording stopped" + sessionStopResult.toString());
-                    }
-                });
-
-        Fitness.RecordingApi.unsubscribe(mClient, DataType.TYPE_STEP_COUNT_DELTA)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        if (status.isSuccess()) {
-                            LOGI(TAG, "Successfully unsubscribed for data type: " +
-                                    DataType.TYPE_STEP_COUNT_DELTA.getName());
-                        } else {
-                            // Subscription not removed
-                            LOGI(TAG, "Failed to unsubscribe for data type: " +
-                                    DataType.TYPE_STEP_COUNT_DELTA.getName());
-                        }
-                    }
-                });
     }
 
     public void readSession() {
@@ -216,10 +151,12 @@ public class FitUtils implements
 
         switch (mAction) {
             case ACTION_START_SESSION:
-                startRecording(getSessionIdentifier());
+                //startRecording(getSessionIdentifier());
+                startSensors();
                 break;
             case ACTION_STOP_SESSION:
-                stopRecording(getSessionIdentifier());
+                //stopRecording(getSessionIdentifier());
+                stopSensors();
                 break;
             case ACTION_READ_SESSION:
                 new ReadSessionTask().execute();
@@ -250,6 +187,10 @@ public class FitUtils implements
                 .read(DataType.TYPE_STEP_COUNT_DELTA)
                 .setSessionName(SESSION_NAME)
                 .build();
+    }
+
+    public void saveSession(Event event) {
+        new SaveSessionTask(event).execute();
     }
 
     private class ReadStepsTask extends AsyncTask<Void, Void, Void> {
@@ -294,7 +235,7 @@ public class FitUtils implements
         }
     }
 
-    private class ReadSessionTask extends AsyncTask<Void, Void, Void> {
+    public class ReadSessionTask extends AsyncTask<Void, Void, Void> {
 
         private long startTime;
         private long endTime;
@@ -327,6 +268,8 @@ public class FitUtils implements
                     Fitness.SessionsApi.readSession(mClient, sessionReadRequest)
                             .await(1, TimeUnit.MINUTES);
 
+            int steps = 0;
+
             // Get a list of the sessions that match the criteria to check the result.
             LOGI(TAG, "Session read was successful. Number of returned sessions is: "
                     + sessionReadResult.getSessions().size());
@@ -338,8 +281,13 @@ public class FitUtils implements
                 List<DataSet> dataSets = sessionReadResult.getDataSet(session);
                 for (DataSet dataSet : dataSets) {
                     dumpDataSet(dataSet);
+                    for (DataPoint dp : dataSet.getDataPoints()) {
+                        steps += dp.getValue(Field.FIELD_STEPS).asInt();
+                    }
                 }
             }
+
+            //SessionManager.get(mContext).updateSteps(steps);
 
             return null;
         }
@@ -347,51 +295,41 @@ public class FitUtils implements
 
     private class SaveSessionTask extends AsyncTask<Void, Void, Void> {
 
-        private Session mSession;
+        private Event mEvent;
 
-        public SaveSessionTask(Session session) {
-            mSession = session;
+        public SaveSessionTask(Event event) {
+            mEvent = event;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
 
+            LOGI(TAG, "Saving event...");
+
+            if (mEvent == null) {
+                LOGI(TAG, "Event is null... returning");
+                return null;
+            }
+
+            long startDate = mEvent.getStartDate().getTime();
+            long endDate = mEvent.getEndDate().getTime();
+
             DataSource stepsDataSource = new DataSource.Builder()
                     .setAppPackageName(mContext.getPackageName())
-                    .setDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
-                    .setName(SESSION_NAME + "- activity")
-                    .setType(DataSource.TYPE_DERIVED)
+                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                    .setName(SESSION_NAME + " - " + Event.getName(mContext, mEvent.getEventType()))
+                    .setType(DataSource.TYPE_RAW)
                     .build();
 
             DataSet stepsDataSet = DataSet.create(stepsDataSource);
 
-            SessionReadRequest sessionReadRequest = buildSessionReadRequest(
-                    mSession.getIdentifier(),
-                    mSession.getStartTime(TimeUnit.MILLISECONDS),
-                    mSession.getEndTime(TimeUnit.MILLISECONDS));
-
-            SessionReadResult sessionReadResult = Fitness.SessionsApi.readSession(mClient, sessionReadRequest)
-                    .await(1, TimeUnit.MINUTES);
-
-            if (sessionReadResult.getSessions().size() > 0) {
-                int steps = 0;
-                Session sessionResult = sessionReadResult.getSessions().get(0);
-                List<DataSet> dataSets = sessionReadResult.getDataSet(sessionResult);
-                for (DataSet dataSet : dataSets) {
-                    for (DataPoint dp : dataSet.getDataPoints()) {
-                        if (dp.getDataType() == DataType.TYPE_STEP_COUNT_DELTA)
-                            steps += dp.getValue(Field.FIELD_STEPS).asInt();
-                    }
-                }
-
-                DataPoint stepsDp = stepsDataSet.createDataPoint()
-                        .setTimeInterval(
-                                mSession.getStartTime(TimeUnit.MILLISECONDS),
-                                mSession.getEndTime(TimeUnit.MILLISECONDS),
-                                TimeUnit.MILLISECONDS);
-                stepsDp.getValue(Field.FIELD_STEPS).setInt(steps);
-                stepsDataSet.add(stepsDp);
-            }
+            DataPoint stepsDp = stepsDataSet.createDataPoint()
+                    .setTimeInterval(
+                            startDate,
+                            endDate,
+                            TimeUnit.MILLISECONDS);
+            stepsDp.getValue(Field.FIELD_STEPS).setInt(mEvent.getData().steps);
+            stepsDataSet.add(stepsDp);
 
 
             // Create a session with metadata about the activity.
@@ -400,10 +338,8 @@ public class FitUtils implements
                     .setDescription(SESSION_DESCRIPTION)
                     .setIdentifier(getSessionIdentifier())
                     .setActivity(FitnessActivities.WALKING)
-                    .setStartTime(mSession.getStartTime(TimeUnit.MILLISECONDS),
-                            TimeUnit.MILLISECONDS)
-                    .setEndTime(mSession.getEndTime(TimeUnit.MILLISECONDS),
-                            TimeUnit.MILLISECONDS)
+                    .setStartTime(startDate, TimeUnit.MILLISECONDS)
+                    .setEndTime(endDate, TimeUnit.MILLISECONDS)
                     .build();
 
             // Build a session insert request
@@ -487,4 +423,47 @@ public class FitUtils implements
     }
 
 
+    public void startSensors() {
+
+        mListener = new OnDataPointListener() {
+            @Override
+            public void onDataPoint(DataPoint dataPoint) {
+                SessionManager.get(mContext)
+                        .updateSteps(dataPoint.getValue(Field.FIELD_STEPS).asInt());
+            }
+        };
+
+        Fitness.SensorsApi.add(
+                mClient,
+                new SensorRequest.Builder()
+                        .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                        .setSamplingRate(1, TimeUnit.SECONDS)
+                        .build(),
+                mListener
+        ).setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(Status status) {
+                if (status.isSuccess()) {
+                    LOGI(TAG, "Listener registered!");
+                } else {
+                    LOGI(TAG, "Listener not registered.");
+                }
+            }
+        });
+    }
+
+    public void stopSensors() {
+        if (mListener != null)
+            Fitness.SensorsApi.remove(mClient, mListener)
+                    .setResultCallback(new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(Status status) {
+                            if (status.isSuccess()) {
+                                LOGI(TAG, "Listener was removed!");
+                            } else {
+                                LOGI(TAG, "Listener was not removed.");
+                            }
+                        }
+                    });
+    }
 }
