@@ -33,6 +33,7 @@ public class Event {
         this.mEventType = eventType;
         mStartDate = new Date();
         mEndDate = mStartDate;
+        mData = new Data();
     }
 
     public long getId() {
@@ -106,5 +107,10 @@ public class Event {
         public Data() {
 
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ID: %s, Type: %s", mId, mEventType);
     }
 }

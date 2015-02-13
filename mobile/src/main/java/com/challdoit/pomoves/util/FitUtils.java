@@ -334,9 +334,9 @@ public class FitUtils implements
 
             // Create a session with metadata about the activity.
             Session session = new Session.Builder()
-                    .setName(SESSION_NAME)
+                    .setName(SESSION_NAME + " - " + Event.getName(mContext, mEvent.getEventType()))
                     .setDescription(SESSION_DESCRIPTION)
-                    .setIdentifier(getSessionIdentifier())
+                    .setIdentifier(getSessionIdentifier(mEvent.getStartDate().getTime()))
                     .setActivity(FitnessActivities.WALKING)
                     .setStartTime(startDate, TimeUnit.MILLISECONDS)
                     .setEndTime(endDate, TimeUnit.MILLISECONDS)

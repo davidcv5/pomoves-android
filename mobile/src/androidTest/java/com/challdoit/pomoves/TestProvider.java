@@ -10,10 +10,10 @@ import android.util.Log;
 import com.challdoit.pomoves.data.PomovesContract;
 import com.challdoit.pomoves.data.PomovesContract.EventEntry;
 import com.challdoit.pomoves.data.PomovesContract.SessionEntry;
-import com.challdoit.pomoves.provider.PomovesProvider.EventCursor;
-import com.challdoit.pomoves.provider.PomovesProvider.SessionCursor;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
+import com.challdoit.pomoves.provider.PomovesProvider.EventCursor;
+import com.challdoit.pomoves.provider.PomovesProvider.SessionCursor;
 
 import java.util.Date;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class TestProvider extends AndroidTestCase {
     private static Date testStart = testDate;
     private static Date testEnd = new Date(testStart.getTime() + 1 * HOUR);
 
-    private static String testData = "some data";
+    private static String testData = "{'steps': '10'}";
 
     public void testDeleteAllRecords() {
         mContext.getContentResolver().delete(
@@ -185,9 +185,9 @@ public class TestProvider extends AndroidTestCase {
         String type = mContext.getContentResolver().getType(SessionEntry.CONTENT_URI);
         assertEquals(SessionEntry.CONTENT_TYPE, type);
 
-        long testSessionId = 1;
+        long testId = 1;
         type = mContext.getContentResolver().getType(
-                SessionEntry.buildSessionUri(testSessionId));
+                SessionEntry.buildSessionUri(testId));
         assertEquals(SessionEntry.CONTENT_ITEM_TYPE, type);
 
         String testStartDate = new Date().toString();
@@ -196,17 +196,23 @@ public class TestProvider extends AndroidTestCase {
         assertEquals(SessionEntry.CONTENT_TYPE, type);
 
         type = mContext.getContentResolver().getType(
-                EventEntry.buildEventForSession(testSessionId));
+                EventEntry.buildEventForSession(testId));
         assertEquals(EventEntry.CONTENT_TYPE, type);
 
         type = mContext.getContentResolver().getType(
-                EventEntry.buildEventWithType(testSessionId, Event.POMODORO));
+                EventEntry.buildEventWithType(testId, Event.POMODORO));
         assertEquals(EventEntry.CONTENT_TYPE, type);
+
+        type = mContext.getContentResolver().getType(
+                EventEntry.buildEventUri(testId));
+        assertEquals(EventEntry.CONTENT_ITEM_TYPE, type);
+
 
     }
 
     private ContentValues getSessionValues() {
         int testDuration = 5;
+        String testUser = "example@gmail.com";
 
         Session testSession = new Session();
         testSession.getStats().waterCount = 2;
@@ -216,6 +222,7 @@ public class TestProvider extends AndroidTestCase {
                 PomovesContract.getDbDateString(testDate));
         values.put(SessionEntry.COLUMN_STATS, testSession.getStatsJson());
         values.put(SessionEntry.COLUMN_DURATION, testDuration);
+        values.put(SessionEntry.COLUMN_USER, testUser);
         return values;
     }
 
@@ -226,9 +233,9 @@ public class TestProvider extends AndroidTestCase {
         values.put(EventEntry.COLUMN_SESSION_ID, sessionId);
         values.put(EventEntry.COLUMN_TYPE, testType);
         values.put(EventEntry.COLUMN_START_TEXT,
-                PomovesContract.getDbDateString(testStart));
+                PomovesContract.getDbDateTimeString(testStart));
         values.put(EventEntry.COLUMN_END_TEXT,
-                PomovesContract.getDbDateString(testEnd));
+                PomovesContract.getDbDateTimeString(testEnd));
         values.put(EventEntry.COLUMN_DATA, testData);
         return values;
     }

@@ -11,6 +11,7 @@ public class Session {
     private Date mDate;
     private String mStatsJson;
     private Stats mStats;
+    private String mUser;
 
     private Gson gson;
 
@@ -49,10 +50,20 @@ public class Session {
         return gson.toJson(mStats, Stats.class);
     }
 
+    public String getUser() {
+        return mUser;
+    }
+
+    public void setUser(String user) {
+        mUser = user;
+    }
+
     @Override
     public String toString() {
-        return String.format("ID: %s, Date: %s",
-                getId(), PomovesContract.getDbDateString(getDate()));
+        return String.format("ID: %s, Date: %s, User: %s",
+                getId(),
+                PomovesContract.getDbDateString(getDate()),
+                getUser());
     }
 
     public class Stats {

@@ -155,11 +155,12 @@ public class SessionManager {
     }
 
     private Session getCurrentSession() {
-        if (getCurrentSessionId() < 0 ||
-                (mSession != null && !DateUtils.isToday(mSession.getDate().getTime())))
-            mSession = createNewSession();
-        else if (mSession == null)
+        if (mSession == null && getCurrentSessionId() > 0)
             mSession = SessionHelper.load(mAppContext, getCurrentSessionId());
+
+        if (mSession == null || !DateUtils.isToday(mSession.getDate().getTime()))
+            mSession = createNewSession();
+
         return mSession;
     }
 
@@ -183,7 +184,7 @@ public class SessionManager {
     }
 
     public void startEvent(int eventType) {
-        int duration = getEventDuration(eventType) * SECOND;
+        int duration = getEventDuration(eventType) * MINUTE;
 
         LOGI(TAG, String.format("Starting Event: %s, Duration: %s",
                 Event.getName(mAppContext, eventType),
@@ -206,6 +207,7 @@ public class SessionManager {
         }
 
         Session session = getCurrentSession();
+        session.setUser(AccountUtils.getActiveAccountName(mAppContext));
         mPrefs.edit().putInt(PREF_CURRENT_EVENT_TYPE, eventType).apply();
         Event event = new Event(session.getId(), eventType);
         event.setStartDate(new Date(now));
@@ -333,6 +335,13 @@ public class SessionManager {
 
     public void updateSteps(int steps) {
         LOGI(TAG, "Updating session - steps: " + steps);
+
+        if (mCurrentSteps == 0) {
+            LOGI(TAG, "Skip the first time we receive the delta during a break, and start counting");
+            addCurrentSteps(1);
+            return;
+        }
+
         mSession.getStats().stepCount += steps;
         SessionHelper.update(mAppContext, mSession);
         addCurrentSteps(steps);

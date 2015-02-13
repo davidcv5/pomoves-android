@@ -46,9 +46,10 @@ public class SessionHelper {
 
     private static ContentValues getContentValues(Session session) {
         ContentValues values = new ContentValues();
-        values.put(PomovesContract.SessionEntry.COLUMN_DATE_TEXT,
+        values.put(SessionEntry.COLUMN_DATE_TEXT,
                 PomovesContract.getDbDateString(session.getDate()));
-        values.put(PomovesContract.SessionEntry.COLUMN_STATS, session.getStatsJson());
+        values.put(SessionEntry.COLUMN_STATS, session.getStatsJson());
+        values.put(SessionEntry.COLUMN_USER, session.getUser());
         return values;
     }
 }
