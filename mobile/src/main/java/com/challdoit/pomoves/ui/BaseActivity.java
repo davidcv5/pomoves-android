@@ -123,7 +123,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     // icons for navdrawer items (indices must correspond to above array)
     private static final int[] NAVDRAWER_ICON_RES_ID = new int[]{
             R.drawable.ic_play,  // Timer
-            R.drawable.ic_launcher, // Stats
+            R.drawable.ic_stats, // Stats
             0, // Sign in
             R.drawable.ic_drawer_settings
     };
@@ -407,10 +407,15 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(PrefUtils.PREF_ATTENDEE_AT_VENUE)) {
-            LOGD(TAG, "Attendee at venue preference changed, repopulating nav drawer and menu.");
-            populateNavDrawer();
-            invalidateOptionsMenu();
+        if (key.equals(PrefUtils.PREF_GOOGLE_FIT_ENABLED)) {
+            if (PrefUtils.isGoogleFitEnabled(this)) {
+                AccountUtils.setAuthToken(this, null);
+                if (mLoginAndAuthHelper != null)
+                    mLoginAndAuthHelper.stop();
+                mLoginAndAuthHelper = new LoginAndAuthHelper(this, this,
+                        AccountUtils.getActiveAccountName(this));
+                mLoginAndAuthHelper.start();
+            }
         }
     }
 
@@ -636,7 +641,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
                 finish();
                 break;
             case NAVDRAWER_ITEM_STATS:
-                intent = new Intent(this, StatsActivity.class);
+                intent = new Intent(this, ChartsActivity.class);
                 startActivity(intent);
                 finish();
                 break;
@@ -850,6 +855,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
         String accountName = AccountUtils.getActiveAccountName(this);
         LOGD(TAG, "Chosen account: " + AccountUtils.getActiveAccountName(this));
+
+        if (!AccountUtils.hasPlusInfo(this, accountName) && !PrefUtils.isGoogleFitEnabled(this))
+            return;
 
         if (mLoginAndAuthHelper != null && mLoginAndAuthHelper.getAccountName().equals(accountName)) {
             LOGD(TAG, "Helper already set up; simply starting it.");

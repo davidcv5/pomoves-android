@@ -97,7 +97,12 @@ public class PrefUtils {
     public static final String PREF_LONG_BREAK_DURATION = "pref_long_break_duration";
 
     /**
-     * Boolean indicating if we can collect and Analytics
+     * Boolean indicating if we can collect Google Fit Data
+     */
+    public static final String PREF_GOOGLE_FIT_ENABLED = "pref_google_fit_enabled";
+
+    /**
+     * Boolean indicating if we can collect Analytics
      */
     public static final String PREF_ANALYTICS_ENABLED = "pref_analytics_enabled";
 
@@ -188,6 +193,12 @@ public class PrefUtils {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         sp.edit().putLong(PREF_LAST_SYNC_SUCCEEDED, UIUtils.getCurrentTime(context)).commit();
     }
+
+    public static boolean isGoogleFitEnabled(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getBoolean(PREF_GOOGLE_FIT_ENABLED, false);
+    }
+
 
     public static boolean isAnalyticsEnabled(final Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
