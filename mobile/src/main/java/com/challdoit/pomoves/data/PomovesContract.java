@@ -7,6 +7,7 @@ import android.provider.BaseColumns;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class PomovesContract {
 
@@ -35,6 +36,7 @@ public class PomovesContract {
         public static final String COLUMN_DATE_TEXT = "date";
         public static final String COLUMN_DURATION = "duration";
         public static final String COLUMN_STATS = "stats";
+        public static final String COLUMN_USER = "user";
 
         public static Uri buildSessionUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
@@ -76,13 +78,16 @@ public class PomovesContract {
         }
 
         public static Uri buildEventForSession(long sessionId) {
-            return CONTENT_URI.buildUpon()
-                    .appendPath(Long.toString(sessionId)).build();
+            return SessionEntry.CONTENT_URI.buildUpon()
+                    .appendPath(Long.toString(sessionId))
+                    .appendPath(PATH_EVENT)
+                    .build();
         }
 
         public static Uri buildEventWithType(long sessionId, int type) {
-            return CONTENT_URI.buildUpon()
+            return SessionEntry.CONTENT_URI.buildUpon()
                     .appendPath(Long.toString(sessionId))
+                    .appendPath(PATH_EVENT)
                     .appendQueryParameter(COLUMN_TYPE, Integer.toString(type))
                     .build();
         }
@@ -113,12 +118,12 @@ public class PomovesContract {
 //    }
 
     public static String getDbDateString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         return sdf.format(date);
     }
 
     public static Date getDateFromDb(String dateText) {
-        SimpleDateFormat dbDateFormat = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat dbDateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         try {
             return dbDateFormat.parse(dateText);
         } catch (ParseException e) {
@@ -128,12 +133,12 @@ public class PomovesContract {
     }
 
     public static String getDbDateTimeString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATETIME_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATETIME_FORMAT, Locale.US);
         return sdf.format(date);
     }
 
     public static Date getDateTimeFromDb(String dateText) {
-        SimpleDateFormat dbDateFormat = new SimpleDateFormat(DATETIME_FORMAT);
+        SimpleDateFormat dbDateFormat = new SimpleDateFormat(DATETIME_FORMAT, Locale.US);
         try {
             return dbDateFormat.parse(dateText);
         } catch (ParseException e) {

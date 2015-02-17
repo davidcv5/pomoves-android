@@ -1,5 +1,6 @@
 package com.challdoit.pomoves.ui;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,15 +15,19 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.challdoit.pomoves.R;
 import com.challdoit.pomoves.SessionManager;
+import com.challdoit.pomoves.Utils;
 import com.challdoit.pomoves.data.PomovesContract;
+import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
 import com.challdoit.pomoves.provider.PomovesProvider;
 
@@ -35,10 +40,12 @@ public class TimerFragment extends Fragment
     private SessionManager mSessionManager;
     private PomodoroCountdown mPomodoroCountdown;
 
+    private FrameLayout mTimerFrameLayout;
+
     private TextView mTimerText;
     private TextView mPomodoroTextView;
     private TextView mStepsTextView;
-    private TextView mWaterTextView;
+    //private TextView mWaterTextView;
     private FloatingActionButton mTimerButton;
 
     private static final int POMODORO_LOADER = 0;
@@ -56,6 +63,8 @@ public class TimerFragment extends Fragment
             }
             if (mTimerButton != null)
                 mTimerButton.setChecked(isRunning);
+
+            updateColors();
         }
     };
 
@@ -80,10 +89,12 @@ public class TimerFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_timer, container, false);
 
+        mTimerFrameLayout = (FrameLayout) view.findViewById(R.id.timerFrameLayout);
+
         mTimerText = (TextView) view.findViewById(R.id.timerTextView);
         mPomodoroTextView = (TextView) view.findViewById(R.id.pomodoro_countTextView);
         mStepsTextView = (TextView) view.findViewById(R.id.stepsTextView);
-        mWaterTextView = (TextView) view.findViewById(R.id.waterTextView);
+//        mWaterTextView = (TextView) view.findViewById(R.id.waterTextView);
 
         setupCountdown();
 
@@ -127,6 +138,8 @@ public class TimerFragment extends Fragment
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
                 mBroadcastReceiver,
                 new IntentFilter(SessionManager.ACTION_EVENT));
+
+        updateColors();
     }
 
     @Override
@@ -141,7 +154,7 @@ public class TimerFragment extends Fragment
         if (timeRemaining <= 0)
             return "00:00";
         long minutes = TimeUnit.MILLISECONDS.toMinutes(timeRemaining);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeRemaining - minutes * 60);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeRemaining) - minutes * 60;
 
         return String.format("%02d:%02d", minutes, seconds);
     }
@@ -169,7 +182,7 @@ public class TimerFragment extends Fragment
                     new PomovesProvider.SessionCursor(cursor).getSession();
             mPomodoroTextView.setText(Integer.toString(session.getStats().pomoCount));
             mStepsTextView.setText(Integer.toString(session.getStats().stepCount));
-            mWaterTextView.setText(Integer.toString(session.getStats().waterCount));
+//            mWaterTextView.setText(Integer.toString(session.getStats().waterCount));
         }
     }
 
@@ -192,6 +205,31 @@ public class TimerFragment extends Fragment
         @Override
         public void onFinish() {
             Log.d(TAG, "countdown timer finished");
+        }
+    }
+
+    @SuppressLint("NewApi")
+    private void updateColors() {
+
+        Toolbar toolbar = ((BaseActivity) getActivity()).getActionBarToolbar();
+        toolbar.setBackgroundColor(getResources().getColor(
+                mSessionManager.getCurrentEventType() == Event.POMODORO ?
+                        R.color.pomodoro_toolbar :
+                        R.color.break_toolbar
+        ));
+
+        mTimerFrameLayout.setBackgroundColor(getResources().getColor(
+                mSessionManager.getCurrentEventType() == Event.POMODORO ?
+                        R.color.pomodoro_timer_frame :
+                        R.color.break_timer_frame
+        ));
+
+
+        if (Utils.hasLollipopApi()) {
+            getActivity().getWindow().setStatusBarColor(getResources().getColor(
+                    mSessionManager.getCurrentEventType() == Event.POMODORO ?
+                            R.color.pomodoro_status_bar :
+                            R.color.break_status_bar));
         }
     }
 }

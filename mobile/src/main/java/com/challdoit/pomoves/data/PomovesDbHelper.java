@@ -7,9 +7,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.challdoit.pomoves.data.PomovesContract.EventEntry;
 import com.challdoit.pomoves.data.PomovesContract.SessionEntry;
 
-/**
- * Created by David on 12/3/14.
- */
 public class PomovesDbHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
@@ -27,7 +24,8 @@ public class PomovesDbHelper extends SQLiteOpenHelper {
                         SessionEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         SessionEntry.COLUMN_DATE_TEXT + " TEXT NULL, " +
                         SessionEntry.COLUMN_DURATION + " INTEGER NULL, " +
-                        SessionEntry.COLUMN_STATS + " TEXT NULL" +
+                        SessionEntry.COLUMN_STATS + " TEXT NULL, " +
+                        SessionEntry.COLUMN_USER + " TEXT NULL" +
                         ");";
 
         final String SQL_CREATE_EVENT_TABLE =

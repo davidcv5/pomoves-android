@@ -11,9 +11,6 @@ import com.challdoit.pomoves.model.SessionHelper;
 
 import java.util.Date;
 
-/**
- * Created by admin on 12/19/14.
- */
 public class TestEventHelper extends AndroidTestCase {
 
     public void testDeleteAllRecords() {
@@ -44,7 +41,7 @@ public class TestEventHelper extends AndroidTestCase {
 
         Event loadedEvent = EventHelper.load(getContext(), event.getId());
 
-        assertEquals(Event.POMODORO, loadedEvent.POMODORO);
+        assertEquals(Event.POMODORO, loadedEvent.getEventType());
 
         Date startDate = new Date(event.getStartDate().getTime() + 5000);
 

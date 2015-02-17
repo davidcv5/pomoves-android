@@ -52,7 +52,7 @@ public class EventHelper {
                 PomovesContract.getDbDateTimeString(event.getStartDate()));
         values.put(PomovesContract.EventEntry.COLUMN_END_TEXT,
                 PomovesContract.getDbDateTimeString(event.getEndDate()));
-        values.put(PomovesContract.EventEntry.COLUMN_DATA, event.getData());
+        values.put(PomovesContract.EventEntry.COLUMN_DATA, event.getDataJson());
         return values;
     }
 

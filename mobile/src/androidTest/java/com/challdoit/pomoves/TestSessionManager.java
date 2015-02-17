@@ -123,6 +123,8 @@ public class TestSessionManager extends AndroidTestCase {
         assertEquals(1, cursor.getCount());
 
         testClearPreferences();
+
+        testDeleteAll();
     }
 
     public void testStopSessionManually() {
@@ -140,6 +142,8 @@ public class TestSessionManager extends AndroidTestCase {
         assertEquals(Event.POMODORO, manager.getCurrentEventType());
 
         testClearPreferences();
+
+        testDeleteAll();
     }
 
 //    public void testResumeSessionFromPomodoro(){

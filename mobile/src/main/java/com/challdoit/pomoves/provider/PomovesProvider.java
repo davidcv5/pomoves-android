@@ -15,15 +15,13 @@ import com.challdoit.pomoves.data.PomovesDbHelper;
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.model.Session;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class PomovesProvider extends ContentProvider {
 
     private static final int SESSION = 100;
     private static final int SESSION_ID = 101;
     private static final int EVENT = 301;
-    private static final int EVENT_FOR_SESSION = 302;
+    private static final int EVENT_ID = 302;
+    private static final int EVENTS_FOR_SESSION = 303;
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
@@ -103,8 +101,9 @@ public class PomovesProvider extends ContentProvider {
 
         matcher.addURI(authority, PomovesContract.PATH_SESSION, SESSION);
         matcher.addURI(authority, PomovesContract.PATH_SESSION + "/*", SESSION_ID);
+        matcher.addURI(authority, PomovesContract.PATH_SESSION + "/*/" + PomovesContract.PATH_EVENT, EVENTS_FOR_SESSION);
         matcher.addURI(authority, PomovesContract.PATH_EVENT, EVENT);
-        matcher.addURI(authority, PomovesContract.PATH_EVENT + "/*", EVENT_FOR_SESSION);
+        matcher.addURI(authority, PomovesContract.PATH_EVENT + "/*", EVENT_ID);
 
         return matcher;
     }
@@ -136,6 +135,18 @@ public class PomovesProvider extends ContentProvider {
                 result = getSession(uri, projection, sortOrder);
                 break;
             }
+            case EVENT_ID: {
+                result = mOpenHelper.getReadableDatabase().query(
+                        PomovesContract.EventEntry.TABLE_NAME,
+                        projection,
+                        PomovesContract.EventEntry._ID + "='"
+                                + ContentUris.parseId(uri) + "'",
+                        null,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            }
             case EVENT: {
                 result = mOpenHelper.getReadableDatabase().query(
                         PomovesContract.EventEntry.TABLE_NAME,
@@ -147,7 +158,7 @@ public class PomovesProvider extends ContentProvider {
                         sortOrder);
                 break;
             }
-            case EVENT_FOR_SESSION: {
+            case EVENTS_FOR_SESSION: {
                 result = getEventForSession(uri, projection, sortOrder);
                 break;
             }
@@ -169,9 +180,11 @@ public class PomovesProvider extends ContentProvider {
                 return PomovesContract.SessionEntry.CONTENT_ITEM_TYPE;
             case SESSION:
                 return PomovesContract.SessionEntry.CONTENT_TYPE;
+            case EVENT_ID:
+                return PomovesContract.EventEntry.CONTENT_ITEM_TYPE;
             case EVENT:
                 return PomovesContract.EventEntry.CONTENT_TYPE;
-            case EVENT_FOR_SESSION:
+            case EVENTS_FOR_SESSION:
                 return PomovesContract.EventEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -279,6 +292,8 @@ public class PomovesProvider extends ContentProvider {
                     getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_START_TEXT))));
             event.setEndDate(PomovesContract.getDateTimeFromDb(
                     getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_END_TEXT))));
+            event.setDataFromJson(
+                    getString(getColumnIndex(PomovesContract.EventEntry.COLUMN_DATA)));
 
             return event;
         }
@@ -297,17 +312,10 @@ public class PomovesProvider extends ContentProvider {
             session.setDate(PomovesContract.getDateFromDb(
                     getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_DATE_TEXT))));
             session.setStatsFromJson(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_STATS)));
-
+            session.setUser(getString(getColumnIndex(PomovesContract.SessionEntry.COLUMN_USER)));
             return session;
         }
 
-        public List<Session> toList() {
-            List<Session> result = new ArrayList<>();
-            while (moveToNext())
-                result.add(getSession());
-
-            return result;
-        }
     }
 
 }
