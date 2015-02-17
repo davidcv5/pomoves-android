@@ -101,6 +101,8 @@ public class PrefUtils {
      */
     public static final String PREF_GOOGLE_FIT_ENABLED = "pref_google_fit_enabled";
 
+    public static final String PREF_NOTIFICATIONS_ENABLED = "pref_notifications_enabled";
+
     /**
      * Boolean indicating if we can collect Analytics
      */
@@ -197,6 +199,11 @@ public class PrefUtils {
     public static boolean isGoogleFitEnabled(final Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         return sp.getBoolean(PREF_GOOGLE_FIT_ENABLED, false);
+    }
+
+    public static boolean isNotificationsEnabled(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getBoolean(PREF_NOTIFICATIONS_ENABLED, true);
     }
 
 

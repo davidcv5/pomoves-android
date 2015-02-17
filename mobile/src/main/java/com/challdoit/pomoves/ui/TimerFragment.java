@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.challdoit.pomoves.PomovesReceiver;
 import com.challdoit.pomoves.R;
 import com.challdoit.pomoves.SessionManager;
 import com.challdoit.pomoves.Utils;
@@ -53,16 +54,10 @@ public class TimerFragment extends Fragment
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mPomodoroCountdown != null)
-                mPomodoroCountdown.cancel();
-            boolean isRunning = mSessionManager.isTrackingSession();
-            if (isRunning) {
-                mPomodoroCountdown = new PomodoroCountdown(
-                        mSessionManager.getCurrentEndTime() - System.currentTimeMillis(), 1000);
-                mPomodoroCountdown.start();
-            }
+            setupCountdown();
+
             if (mTimerButton != null)
-                mTimerButton.setChecked(isRunning);
+                mTimerButton.setChecked(mSessionManager.isTrackingSession());
 
             updateColors();
         }
@@ -96,8 +91,6 @@ public class TimerFragment extends Fragment
         mStepsTextView = (TextView) view.findViewById(R.id.stepsTextView);
 //        mWaterTextView = (TextView) view.findViewById(R.id.waterTextView);
 
-        setupCountdown();
-
         mTimerButton = (FloatingActionButton) view.findViewById(R.id.timerButton);
 
         mTimerButton.setChecked(mSessionManager.isTrackingSession());
@@ -109,6 +102,8 @@ public class TimerFragment extends Fragment
                         ((FloatingActionButton) v).isChecked() ?
                                 SessionManager.ACTION_NEXT :
                                 SessionManager.ACTION_STOP);
+                intent.putExtra(PomovesReceiver.DISABLE_VIBRATION, true);
+
                 getActivity().sendBroadcast(intent);
             }
         });
@@ -120,21 +115,28 @@ public class TimerFragment extends Fragment
 
         long timeRemaining = mSessionManager.getCurrentEndTime() - System.currentTimeMillis();
 
+        if (mPomodoroCountdown != null)
+            mPomodoroCountdown.cancel();
         mPomodoroCountdown = new PomodoroCountdown(timeRemaining, 1000);
 
         if (mSessionManager.isTrackingSession()) {
             mTimerText.setText(getFormattedTime(timeRemaining));
             mPomodoroCountdown.start();
-        } else
-            mTimerText.setText(getFormattedTime(0));
+        } else {
+            int defaultDuration = mSessionManager.getEventDuration(mSessionManager.getCurrentEventType());
+            mTimerText.setText(getFormattedTime(defaultDuration * 1000 * 60));
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
         setupCountdown();
+
         if (mTimerButton != null)
             mTimerButton.setChecked(mSessionManager.isTrackingSession());
+
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
                 mBroadcastReceiver,
                 new IntentFilter(SessionManager.ACTION_EVENT));

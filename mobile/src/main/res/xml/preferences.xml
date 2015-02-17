@@ -31,4 +31,13 @@
             android:summary="@string/pref_google_fit_enabled_description"
             android:title="@string/pref_google_fit_enabled_title"/>
     </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_notifications">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_notifications_enabled"
+            android:summary="@string/pref_notifications_enabled_description"
+            android:title="@string/pref_notifications_enabled_title"/>
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -9,6 +9,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.ui.TimerActivity;
+import com.challdoit.pomoves.util.PrefUtils;
 
 import static com.challdoit.pomoves.util.LogUtils.LOGI;
 
@@ -17,6 +18,7 @@ public class PomovesReceiver extends BroadcastReceiver {
     private static final int NOTIFICATION_ID = 1;
 
     public static final String TAG = PomovesReceiver.class.getSimpleName();
+    public static final String DISABLE_VIBRATION = "DISABLE_VIBRATION";
     private SessionManager manager;
 
     @Override
@@ -32,6 +34,7 @@ public class PomovesReceiver extends BroadcastReceiver {
         }
 
         boolean isRunning = manager.isTrackingSession();
+        boolean disableVibration = intent.getBooleanExtra(DISABLE_VIBRATION, false);
 
         switch (intent.getAction()) {
             case SessionManager.ACTION_STOP:
@@ -47,7 +50,7 @@ public class PomovesReceiver extends BroadcastReceiver {
                 break;
         }
 
-        notifyUser(context, manager.isTrackingSession());
+        notifyUser(context, manager.isTrackingSession(), disableVibration);
     }
 
     private void cancelNotifications(Context context) {
@@ -56,9 +59,12 @@ public class PomovesReceiver extends BroadcastReceiver {
         mNotifyMgr.cancel(NOTIFICATION_ID);
     }
 
-    private void notifyUser(Context context, boolean isRunning) {
+    private void notifyUser(Context context, boolean isRunning, boolean disableVibration) {
         NotificationCompat.Builder mBuilder =
                 getNotificationBuilder(context, isRunning);
+
+        if (!disableVibration && PrefUtils.isNotificationsEnabled(context))
+            mBuilder.setVibrate(new long[]{0, 500});
 
         PendingIntent mainPendingIntent = getMainPendingIntent(context);
 
@@ -119,6 +125,7 @@ public class PomovesReceiver extends BroadcastReceiver {
 
     private PendingIntent getActionPendingIntent(Context context, String action) {
         Intent broadcast = new Intent(action);
+        broadcast.putExtra(DISABLE_VIBRATION, true);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
         return PendingIntent.getBroadcast(context, 0, broadcast, flags);
     }

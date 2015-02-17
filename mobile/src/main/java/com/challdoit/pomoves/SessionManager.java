@@ -250,7 +250,8 @@ public class SessionManager {
             Event event = EventHelper.load(mAppContext, mCurrentEventId);
             event.getData().steps = mCurrentSteps;
             EventHelper.update(mAppContext, event);
-            getFitUtils().saveSession(event);
+            if (event.getData().steps > 10)
+                getFitUtils().saveSession(event);
             resetSteps();
         }
 
@@ -304,17 +305,16 @@ public class SessionManager {
         return mPrefs.getInt(PREF_CURRENT_EVENT_TYPE, Event.POMODORO);
     }
 
-    private int getEventDuration(int eventType) {
+    public int getEventDuration(int eventType) {
         switch (eventType) {
-            case Event.POMODORO:
-                return PrefUtils.getPomodoroDuration(mAppContext);
             case Event.SHORT_BREAK:
                 return PrefUtils.getShortBreakDuration(mAppContext);
             case Event.LONG_BREAK:
                 return PrefUtils.getLongBreakDuration(mAppContext);
-        }
+            default:
+                return PrefUtils.getPomodoroDuration(mAppContext);
 
-        return 0;
+        }
     }
 
     public int getPomodoroCount() {
