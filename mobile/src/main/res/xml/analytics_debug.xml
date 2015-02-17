@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools"
            tools:ignore="TypographyDashes">
     <!-- Using -2 profile for production, -3 for debug -->
-    <string name="ga_trackingId">UA-22236056-3</string>
+    <string name="ga_trackingId">UA-59834006-2</string>
     <bool name="ga_reportUncaughtExceptions">true</bool>
     <integer name="ga_sessionTimeout">300</integer>
 

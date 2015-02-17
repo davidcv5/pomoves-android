@@ -32,4 +32,20 @@
     <color name="ripple">@color/theme_accent_1_light</color>
     <color name="accent_pressed">@color/theme_accent_1_light</color>
 
+    <color name="break_dark">#388E3C</color>
+    <color name="break_normal">#4CAF50</color>
+
+    <!-- STATS -->
+    <color name="pomodoro_count">@color/theme_primary</color>
+    <color name="steps_count">@color/break_normal</color>
+    <color name="water_count">#03A9F4</color>
+
+    <color name="pomodoro_status_bar">@color/theme_primary_dark</color>
+    <color name="break_status_bar">@color/break_dark</color>
+
+    <color name="pomodoro_toolbar">@color/theme_primary</color>
+    <color name="break_toolbar">@color/break_normal</color>
+
+    <color name="pomodoro_timer_frame">@color/theme_primary</color>
+    <color name="break_timer_frame">@color/break_normal</color>
 </resources>

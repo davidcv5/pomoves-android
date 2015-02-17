@@ -97,5 +97,6 @@
     <string name="pref_category_connect">Connect</string>
     <string name="pref_google_fit_enabled_description">Enable access to Google Fit Data</string>
     <string name="pref_google_fit_enabled_title">Google Fit</string>
+    <string name="title_activity_charts">Charts</string>
 
 </resources>

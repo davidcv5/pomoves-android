@@ -123,7 +123,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     // icons for navdrawer items (indices must correspond to above array)
     private static final int[] NAVDRAWER_ICON_RES_ID = new int[]{
             R.drawable.ic_play,  // Timer
-            R.drawable.ic_launcher, // Stats
+            R.drawable.ic_stats, // Stats
             0, // Sign in
             R.drawable.ic_drawer_settings
     };
@@ -641,7 +641,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
                 finish();
                 break;
             case NAVDRAWER_ITEM_STATS:
-                intent = new Intent(this, StatsActivity.class);
+                intent = new Intent(this, ChartsActivity.class);
                 startActivity(intent);
                 finish();
                 break;

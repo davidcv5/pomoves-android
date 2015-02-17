@@ -6,10 +6,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.challdoit.pomoves.model.Event;
 import com.challdoit.pomoves.ui.TimerActivity;
+
+import static com.challdoit.pomoves.util.LogUtils.LOGI;
 
 public class PomovesReceiver extends BroadcastReceiver {
 
@@ -21,7 +22,7 @@ public class PomovesReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Log.d(TAG, "time is up!");
+        LOGI(TAG, "time is up!");
 
         manager = SessionManager.get(context);
 
@@ -92,7 +93,12 @@ public class PomovesReceiver extends BroadcastReceiver {
                 new NotificationCompat.Builder(context)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
                         .setSmallIcon(R.drawable.ic_pomodoro_notification)
-                        .setContentTitle("My notification")
+                        .setContentTitle(
+                                isRunning ?
+                                        manager.getCurrentEventType() == Event.POMODORO ?
+                                                "Stay focused" :
+                                                "Make the best of your break" :
+                                        "Pomoves")
                         .setContentText(isRunning ?
                                 "Running: " + Event.getName(context,
                                         manager.getCurrentEventType()) :

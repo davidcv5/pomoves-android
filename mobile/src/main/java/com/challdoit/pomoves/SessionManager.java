@@ -144,6 +144,12 @@ public class SessionManager {
                 .apply();
     }
 
+    public void setCurrentEventId(long eventId) {
+        mCurrentEventId = eventId;
+        mPrefs.edit().putLong(PREF_CURRENT_EVENT_ID, eventId)
+                .apply();
+    }
+
     public long getCurrentEventId() {
         return mCurrentEventId;
     }
@@ -213,7 +219,7 @@ public class SessionManager {
         event.setStartDate(new Date(now));
         event.setEndDate(new Date(mCurrentEndTime));
         EventHelper.insert(mAppContext, event);
-        mCurrentEventId = event.getId();
+        setCurrentEventId(event.getId());
         LOGI(TAG, "Current Event Type: " + Event.getName(mAppContext, getCurrentEventType()));
 
         if (eventType == Event.SHORT_BREAK || eventType == Event.LONG_BREAK)
@@ -295,7 +301,7 @@ public class SessionManager {
     }
 
     public int getCurrentEventType() {
-        return mPrefs.getInt(PREF_CURRENT_EVENT_TYPE, -1);
+        return mPrefs.getInt(PREF_CURRENT_EVENT_TYPE, Event.POMODORO);
     }
 
     private int getEventDuration(int eventType) {
