@@ -8,6 +8,7 @@ import com.challdoit.pomoves.SessionManager;
 import com.challdoit.pomoves.model.Event;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
@@ -72,7 +73,8 @@ public class FitUtils implements
 
     private void buildFitnessClient() {
         mClient = new GoogleApiClient.Builder(mContext)
-                .addApi(Fitness.API)
+                .addApi(Fitness.SENSORS_API)
+                .addApi(Fitness.SESSIONS_API)
                 .addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ_WRITE))
                 .setAccountName(mAccountName)
                 .addConnectionCallbacks(this)

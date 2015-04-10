@@ -182,7 +182,7 @@ public class LoginAndAuthHelper implements
                 builder.addScope(new Scope(scope));
             }
             if (PrefUtils.isGoogleFitEnabled(mAppContext)) {
-                builder.addApi(Fitness.API);
+                builder.addApi(Fitness.SENSORS_API);
                 for (String scope : FitUtils.FIT_SCOPES) {
                     builder.addScope(new Scope(scope));
                 }
